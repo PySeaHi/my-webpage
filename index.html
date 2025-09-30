@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的研究学习报告</title>
+    <title>Hale 研究学习报告</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -31,6 +31,7 @@
         
         .header {
             margin-bottom: 50px;
+            position: relative;
         }
         
         .header h1 {
@@ -47,6 +48,57 @@
             max-width: 700px;
             margin: 0 auto;
             line-height: 1.6;
+        }
+        
+        .author-info {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .author-info i {
+            color: #3498db;
+        }
+        
+        .sort-controls {
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .sort-btn {
+            padding: 10px 20px;
+            background: white;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .sort-btn:hover {
+            background: #3498db;
+            color: white;
+            transform: translateY(-3px);
+        }
+        
+        .sort-btn.active {
+            background: #3498db;
+            color: white;
         }
         
         .links-container {
@@ -118,6 +170,18 @@
             flex-grow: 1;
         }
         
+        .link-date {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
         .link-button {
             display: inline-block;
             padding: 12px 28px;
@@ -158,6 +222,21 @@
             
             .header p {
                 font-size: 1.1rem;
+            }
+            
+            .author-info {
+                position: static;
+                margin-top: 20px;
+                justify-content: center;
+            }
+            
+            .sort-controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .sort-btn {
+                width: 200px;
             }
         }
         
@@ -202,60 +281,135 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>我的项目</h1>
-            <p>欢迎访问我的项目页面，这里汇集了我精心制作的各种报告与学习资料</p>
+            <h1>我的研究学习报告</h1>
+            <p>欢迎访问我的项目页面，这里汇集了我精心制作的各种前沿科技与研究报告</p>
+            <div class="author-info">
+                <i class="fas fa-user"></i>
+                <span>作者：Hale Shi</span>
+            </div>
         </div>
         
-        <div class="links-container">
-            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/AI spider report.html', '_blank')">
-                <div class="link-icon">
-                    <i class="fas fa-spider"></i>
-                </div>
-                <h3>AI Spider Report</h3>
-                <p>查看AI蜘蛛报告，了解网络爬虫数据分析结果和智能抓取技术</p>
-                <a href="https://pyseahi.github.io/my-webpage/AI spider report.html" class="link-button" target="_blank">查看报告</a>
-            </div>
-            
-            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Aivilization Seek.html', '_blank')">
-                <div class="link-icon">
-                    <i class="fas fa-globe-americas"></i>
-                </div>
-                <h3>Aivilization Seek</h3>
-                <p>探索人工智能文明，了解前沿技术与未来发展，体验智能世界的无限可能</p>
-                <a href="https://pyseahi.github.io/my-webpage/Aivilization Seek.html" class="link-button" target="_blank">开始探索</a>
-            </div>
-            
-            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Information Silo.html', '_blank')">
-                <div class="link-icon">
-                    <i class="fas fa-database"></i>
-                </div>
-                <h3>Information Silo</h3>
-                <p>深入了解信息孤岛现象，探索数据隔离问题及其解决方案</p>
-                <a href="https://pyseahi.github.io/my-webpage/Information Silo.html" class="link-button" target="_blank">查看详情</a>
-            </div>
-            
-            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/APP Reverse Engineering And Information Security.html', '_blank')">
-                <div class="link-icon">
-                    <i class="fas fa-shield-alt"></i>
-                </div>
-                <h3>APP逆向与信息安全</h3>
-                <p>探索APP逆向工程技术与信息安全防护，了解移动应用安全最佳实践</p>
-                <a href="https://pyseahi.github.io/my-webpage/APP Reverse Engineering And Information Security.html" class="link-button" target="_blank">安全探索</a>
-            </div>
-            
-            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Mathematical Fundamentals and Neural Networks.html', '_blank')">
-                <div class="link-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <h3>数学基础与神经网络</h3>
-                <p>深入学习神经网络背后的数学原理，掌握AI技术的核心理论基础</p>
-                <a href="https://pyseahi.github.io/my-webpage/Mathematical Fundamentals and Neural Networks.html" class="link-button" target="_blank">学习数学</a>
-            </div>
+        <div class="sort-controls">
+            <button class="sort-btn active" id="sort-newest">
+                <i class="fas fa-sort-amount-down"></i> 最新优先
+            </button>
+            <button class="sort-btn" id="sort-oldest">
+                <i class="fas fa-sort-amount-up"></i> 最早优先
+            </button>
+        </div>
+        
+        <div class="links-container" id="links-container">
+            <!-- 链接卡片将通过JavaScript动态生成 -->
         </div>
         
         <div class="footer">
-            <p>© 2025 我的网页项目 | 精心设计，用心呈现每一个作品</p>
+            <p>© 2025 精心制作，用心呈现每一个学习研究成果</p>
         </div>
     </div>
+
+    <script>
+        // 链接数据，按时间顺序排列（从早到晚）
+        const links = [
+            {
+                title: "AI Spider Report",
+                url: "https://pyseahi.github.io/my-webpage/AI spider report.html",
+                description: "查看AI蜘蛛报告，了解网络爬虫数据分析结果和智能抓取技术",
+                date: "5月",
+                icon: "fas fa-spider",
+                buttonText: "查看报告"
+            },
+            {
+                title: "Mathematical Fundamentals and Neural Networks",
+                url: "https://pyseahi.github.io/my-webpage/Mathematical Fundamentals and Neural Networks.html",
+                description: "深入学习神经网络背后的数学原理，掌握AI技术的核心理论基础",
+                date: "6月",
+                icon: "fas fa-brain",
+                buttonText: "学习数学"
+            },
+            {
+                title: "Core Technologies of APP Reverse Engineering",
+                url: "https://pyseahi.github.io/my-webpage/APP Reverse Engineering And Information Security.html",
+                description: "探索APP逆向工程技术与信息安全防护，了解移动应用安全最佳实践",
+                date: "7月",
+                icon: "fas fa-shield-alt",
+                buttonText: "安全探索"
+            },
+            {
+                title: "Information Silo",
+                url: "https://pyseahi.github.io/my-webpage/Information Silo.html",
+                description: "深入了解信息孤岛现象，探索数据隔离问题及其解决方案",
+                date: "8月",
+                icon: "fas fa-database",
+                buttonText: "查看详情"
+            },
+            {
+                title: "Aivilization Seek",
+                url: "https://pyseahi.github.io/my-webpage/Aivilization Seek.html",
+                description: "探索人工智能文明，了解前沿技术与未来发展，体验智能世界的无限可能",
+                date: "9月",
+                icon: "fas fa-globe-americas",
+                buttonText: "开始探索"
+            }
+        ];
+
+        // 获取DOM元素
+        const linksContainer = document.getElementById('links-container');
+        const sortNewestBtn = document.getElementById('sort-newest');
+        const sortOldestBtn = document.getElementById('sort-oldest');
+
+        // 渲染链接卡片
+        function renderLinks(linksArray) {
+            linksContainer.innerHTML = '';
+            
+            linksArray.forEach(link => {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+                card.onclick = () => window.open(link.url, '_blank');
+                
+                card.innerHTML = `
+                    <div class="link-date">${link.date}</div>
+                    <div class="link-icon">
+                        <i class="${link.icon}"></i>
+                    </div>
+                    <h3>${link.title}</h3>
+                    <p>${link.description}</p>
+                    <a href="${link.url}" class="link-button" target="_blank">${link.buttonText}</a>
+                `;
+                
+                linksContainer.appendChild(card);
+            });
+        }
+
+        // 排序功能
+        function sortLinks(order) {
+            const sortedLinks = [...links]; // 创建副本
+            
+            if (order === 'newest') {
+                // 反转数组，使最新的在最前面
+                sortedLinks.reverse();
+            } else if (order === 'oldest') {
+                // 保持原顺序（最早的在前）
+                // 已经是原顺序
+            }
+            
+            renderLinks(sortedLinks);
+            
+            // 更新按钮状态
+            if (order === 'newest') {
+                sortNewestBtn.classList.add('active');
+                sortOldestBtn.classList.remove('active');
+            } else {
+                sortOldestBtn.classList.add('active');
+                sortNewestBtn.classList.remove('active');
+            }
+        }
+
+        // 事件监听
+        sortNewestBtn.addEventListener('click', () => sortLinks('newest'));
+        sortOldestBtn.addEventListener('click', () => sortLinks('oldest'));
+
+        // 初始渲染（默认按最新优先）
+        sortLinks('newest');
+    </script>
 </body>
 </html>
