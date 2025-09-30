@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的研究学习报告</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 50px;
+        }
+        
+        .header h1 {
+            font-size: 2.8rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .links-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .link-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+            padding: 35px 25px;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .link-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .link-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #3498db, #9b59b6, #e74c3c, #2ecc71);
+        }
+        
+        .link-icon {
+            font-size: 3rem;
+            margin-bottom: 25px;
+            color: #3498db;
+            height: 80px;
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .link-card:hover .link-icon {
+            transform: scale(1.1);
+            background: rgba(52, 152, 219, 0.2);
+        }
+        
+        .link-card h3 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .link-card p {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            flex-grow: 1;
+        }
+        
+        .link-button {
+            display: inline-block;
+            padding: 12px 28px;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            color: white;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .link-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .footer {
+            margin-top: 50px;
+            color: #7f8c8d;
+            font-size: 1rem;
+            padding: 20px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .links-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .header p {
+                font-size: 1.1rem;
+            }
+        }
+        
+        /* 卡片颜色变化 */
+        .link-card:nth-child(2) .link-icon {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .link-card:nth-child(2):hover .link-icon {
+            background: rgba(231, 76, 60, 0.2);
+        }
+        
+        .link-card:nth-child(3) .link-icon {
+            color: #2ecc71;
+            background: rgba(46, 204, 113, 0.1);
+        }
+        
+        .link-card:nth-child(3):hover .link-icon {
+            background: rgba(46, 204, 113, 0.2);
+        }
+        
+        .link-card:nth-child(4) .link-icon {
+            color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .link-card:nth-child(4):hover .link-icon {
+            background: rgba(243, 156, 18, 0.2);
+        }
+        
+        .link-card:nth-child(5) .link-icon {
+            color: #9b59b6;
+            background: rgba(155, 89, 182, 0.1);
+        }
+        
+        .link-card:nth-child(5):hover .link-icon {
+            background: rgba(155, 89, 182, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>我的项目</h1>
+            <p>欢迎访问我的项目页面，这里汇集了我精心制作的各种报告与学习资料</p>
+        </div>
+        
+        <div class="links-container">
+            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/AI spider report.html', '_blank')">
+                <div class="link-icon">
+                    <i class="fas fa-spider"></i>
+                </div>
+                <h3>AI Spider Report</h3>
+                <p>查看AI蜘蛛报告，了解网络爬虫数据分析结果和智能抓取技术</p>
+                <a href="https://pyseahi.github.io/my-webpage/AI spider report.html" class="link-button" target="_blank">查看报告</a>
+            </div>
+            
+            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Aivilization Seek.html', '_blank')">
+                <div class="link-icon">
+                    <i class="fas fa-globe-americas"></i>
+                </div>
+                <h3>Aivilization Seek</h3>
+                <p>探索人工智能文明，了解前沿技术与未来发展，体验智能世界的无限可能</p>
+                <a href="https://pyseahi.github.io/my-webpage/Aivilization Seek.html" class="link-button" target="_blank">开始探索</a>
+            </div>
+            
+            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Information Silo.html', '_blank')">
+                <div class="link-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <h3>Information Silo</h3>
+                <p>深入了解信息孤岛现象，探索数据隔离问题及其解决方案</p>
+                <a href="https://pyseahi.github.io/my-webpage/Information Silo.html" class="link-button" target="_blank">查看详情</a>
+            </div>
+            
+            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/APP Reverse Engineering And Information Security.html', '_blank')">
+                <div class="link-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>APP逆向与信息安全</h3>
+                <p>探索APP逆向工程技术与信息安全防护，了解移动应用安全最佳实践</p>
+                <a href="https://pyseahi.github.io/my-webpage/APP Reverse Engineering And Information Security.html" class="link-button" target="_blank">安全探索</a>
+            </div>
+            
+            <div class="link-card" onclick="window.open('https://pyseahi.github.io/my-webpage/Mathematical Fundamentals and Neural Networks.html', '_blank')">
+                <div class="link-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3>数学基础与神经网络</h3>
+                <p>深入学习神经网络背后的数学原理，掌握AI技术的核心理论基础</p>
+                <a href="https://pyseahi.github.io/my-webpage/Mathematical Fundamentals and Neural Networks.html" class="link-button" target="_blank">学习数学</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>© 2025 我的网页项目 | 精心设计，用心呈现每一个作品</p>
+        </div>
+    </div>
+</body>
+</html>
