@@ -1,31 +1,35 @@
-</html>
-<!DOCTYPE html><html lang="zh-CN"><head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>算法系统对信息茧房现象的影响研究报告</title>
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP逆向工程技术详解：抓包、参数分析与防护绕过</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.5.0/mermaid.min.js"></script>
     <style>
         :root {
-            --primary: #2c5530;
-            --secondary: #4a7c59;
-            --accent: #7fb069;
-            --neutral: #f8fafc;
-            --base: #f1f5f9;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
+            --primary: #1e3a5f;
+            --secondary: #2c5282;
+            --accent: #4299e1;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f7fafc;
+            --border: #e2e8f0;
         }
         
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             color: var(--text-primary);
+            background-color: var(--bg-primary);
         }
         
         .serif {
-            font-family: 'Noto Serif SC', serif;
+            font-family: 'Playfair Display', serif;
         }
         
         .toc-fixed {
@@ -34,12 +38,12 @@
             left: 0;
             width: 280px;
             height: 100vh;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-right: 1px solid #e2e8f0;
-            z-index: 1000;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
             overflow-y: auto;
+            z-index: 1000;
             padding: 2rem 1.5rem;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
         }
         
         .main-content {
@@ -47,93 +51,228 @@
             min-height: 100vh;
         }
         
+        .hero-section {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
         .hero-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 2rem;
             align-items: center;
-            min-height: 60vh;
+            min-height: 70vh;
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-bottom: 2rem;
+        }
+        
+        .hero-highlights {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .highlight-card {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .highlight-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 0.5rem;
+        }
+        
+        .subsection-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem 0;
+            color: var(--secondary);
+        }
+        
+        .content-block {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+        
+        .method-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin: 2rem 0;
+        }
+        
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .custom-table th {
+            background: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .custom-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        
+        .custom-table tr:nth-child(even) {
+            background: var(--bg-secondary);
         }
         
         .citation {
-            color: var(--secondary);
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
             text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px dotted var(--secondary);
+            margin: 0 0.2rem;
+            transition: background 0.3s ease;
         }
         
         .citation:hover {
-            color: var(--primary);
-            border-bottom-style: solid;
+            background: var(--secondary);
+            color: white;
         }
         
-        .section-divider {
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--accent), transparent);
-            margin: 3rem 0;
+        .toc-link {
+            display: block;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            transition: color 0.3s ease;
         }
         
-        .pull-quote {
-            background: linear-gradient(135deg, rgba(127, 176, 105, 0.1), rgba(44, 85, 48, 0.05));
-            border-left: 4px solid var(--accent);
-            padding: 1.5rem 2rem;
+        .toc-link:hover, .toc-link.active {
+            color: white;
+            background: rgba(255,255,255,0.1);
+            padding-left: 0.5rem;
+            border-radius: 4px;
+        }
+        
+        .toc-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
             margin: 2rem 0;
-            font-style: italic;
-            font-size: 1.1rem;
-            line-height: 1.7;
         }
         
-        .chart-container {
+        .tech-card {
             background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .tech-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s ease;
+        }
+        
+        .tech-card:hover::before {
+            width: 8px;
+        }
+        
+        .tech-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
         }
         
         @media (max-width: 1024px) {
             .toc-fixed {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
+                display: none;
             }
-            
-            .toc-fixed.mobile-open {
-                transform: translateX(0);
-            }
-            
             .main-content {
                 margin-left: 0;
             }
-            
             .hero-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
             }
         }
 
+        /* Responsive adjustments for small screens */
         @media (max-width: 768px) {
-            .hero-grid h1 {
-                font-size: 2rem;
+            .hero-title {
+                font-size: 2.5rem;
             }
-            
-            .hero-grid p {
+            .hero-subtitle {
                 font-size: 1rem;
             }
-            
-            .main-content .py-16 {
-                padding-top: 2rem;
-                padding-bottom: 2rem;
+            .hero-highlights {
+                grid-template-columns: 1fr;
             }
-            
-            .hero-grid img {
-                height: auto;
-                max-height: 300px;
+            .px-8 {
+                padding-left: 1rem;
+                padding-right: 1rem;
             }
-            
-            .hero-grid > div {
-                padding: 1rem;
-            }
-            
             .mermaid-control-btn:not(.reset-zoom) {
                 display: none;
             }
@@ -143,34 +282,31 @@
                 right: 15px;
             }
         }
-
-        @media (max-width: 390px) {
-            .hero-grid h1 {
-                font-size: 1.5rem;
-            }
+        
+        .pull-quote {
+            font-size: 1.25rem;
+            font-style: italic;
+            color: var(--secondary);
+            border-left: 4px solid var(--accent);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+            background: rgba(66, 153, 225, 0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
         }
         
-        .toc-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            display: block;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
+        .code-block {
+            background: #282c34;
+            color: #abb2bf;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
         }
         
-        .toc-link:hover {
-            color: var(--primary);
-            padding-left: 0.5rem;
-        }
-        
-        .toc-link.active {
-            color: var(--primary);
-            font-weight: 600;
-            padding-left: 0.5rem;
-        }
-        
-        /* Mermaid Chart Styles */
+        /* Mermaid diagram styling */
         .mermaid-container {
             display: flex;
             justify-content: center;
@@ -260,657 +396,902 @@
         .mermaid-control-btn:active {
             transform: scale(0.95);
         }
-
-        /* Improve text contrast and consistency in mermaid charts */
+        
+        /* Enhanced mermaid styling for better contrast and unified appearance */
+        .mermaid svg {
+            max-width: 100% !important;
+            height: auto !important;
+            font-family: 'Inter', sans-serif !important;
+            background-color: white !important;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        
+        /* Node styling with better contrast for different colors */
         .mermaid .node rect,
         .mermaid .node circle,
         .mermaid .node ellipse,
         .mermaid .node polygon {
-            stroke-width: 2px;
+            fill: white !important;
+            stroke: var(--primary) !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
         }
         
-        .mermaid .node .label {
-            color: #1e293b;
-            font-weight: 500;
-            font-size: 14px;
+        /* Different node colors with proper contrast */
+        .mermaid .node:nth-child(4n+1) rect,
+        .mermaid .node:nth-child(4n+1) circle,
+        .mermaid .node:nth-child(4n+1) ellipse,
+        .mermaid .node:nth-child(4n+1) polygon {
+            fill: #e3f2fd !important;
+            stroke: #1976d2 !important;
+        }
+        
+        .mermaid .node:nth-child(4n+2) rect,
+        .mermaid .node:nth-child(4n+2) circle,
+        .mermaid .node:nth-child(4n+2) ellipse,
+        .mermaid .node:nth-child(4n+2) polygon {
+            fill: #f3e5f5 !important;
+            stroke: #7b1fa2 !important;
+        }
+        
+        .mermaid .node:nth-child(4n+3) rect,
+        .mermaid .node:nth-child(4n+3) circle,
+        .mermaid .node:nth-child(4n+3) ellipse,
+        .mermaid .node:nth-child(4n+3) polygon {
+            fill: #e8f5e8 !important;
+            stroke: #388e3c !important;
+        }
+        
+        .mermaid .node:nth-child(4n+4) rect,
+        .mermaid .node:nth-child(4n+4) circle,
+        .mermaid .node:nth-child(4n+4) ellipse,
+        .mermaid .node:nth-child(4n+4) polygon {
+            fill: #fff3e0 !important;
+            stroke: #f57c00 !important;
+        }
+        
+        /* Special styling for start/end nodes */
+        .mermaid .node:first-child rect,
+        .mermaid .node:first-child circle,
+        .mermaid .node:first-child ellipse,
+        .mermaid .node:first-child polygon,
+        .mermaid .node:last-child rect,
+        .mermaid .node:last-child circle,
+        .mermaid .node:last-child ellipse,
+        .mermaid .node:last-child polygon {
+            fill: #fce4ec !important;
+            stroke: #c2185b !important;
+        }
+        
+        /* Text styling with high contrast */
+        .mermaid .node .label,
+        .mermaid .nodeLabel {
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+            font-size: 13px !important;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            line-height: 1.4;
+        }
+        
+        /* Edge styling */
+        .mermaid .edgePath .path {
+            stroke: var(--secondary) !important;
+            stroke-width: 2px !important;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
         }
         
         .mermaid .edgeLabel {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 12px;
-            font-weight: 500;
-            color: #1e293b;
+            background-color: white !important;
+            color: var(--text-primary) !important;
+            font-weight: 600 !important;
+            font-size: 12px !important;
+            padding: 6px 10px !important;
+            border-radius: 6px !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
         }
         
-        .mermaid .edge-pattern-solid {
-            stroke-width: 2px;
+        /* Decision node special styling */
+        .mermaid .node.decision rect,
+        .mermaid .node.decision polygon {
+            fill: #fff8e1 !important;
+            stroke: #ffa000 !important;
+            stroke-width: 2px !important;
         }
         
-        .mermaid .flowchart-link {
-            stroke-width: 2px;
+        .mermaid .node.decision .label {
+            color: #e65100 !important;
+            font-weight: 700 !important;
+        }
+        
+        /* Cluster styling */
+        .mermaid .cluster rect {
+            fill: rgba(66, 153, 225, 0.05) !important;
+            stroke: var(--accent) !important;
+            stroke-width: 1px !important;
+            stroke-dasharray: 5,5 !important;
+        }
+        
+        .mermaid .cluster .label {
+            color: var(--secondary) !important;
+            font-weight: 700 !important;
+            font-size: 14px !important;
+        }
+        
+        /* Timeline specific styling */
+        .mermaid .section {
+            fill: var(--accent) !important;
+            opacity: 0.2 !important;
+        }
+        
+        .mermaid .section0, .mermaid .section1, .mermaid .section2, .mermaid .section3 {
+            fill-opacity: 0.2 !important;
+        }
+        
+        .mermaid .cScale0 {
+            fill: #e3f2fd !important;
+        }
+        
+        .mermaid .cScale1 {
+            fill: #f3e5f5 !important;
+        }
+        
+        .mermaid .cScale2 {
+            fill: #e8f5e8 !important;
+        }
+        
+        .mermaid .cScale3 {
+            fill: #fff3e0 !important;
         }
     </style>
   </head>
 
   <body>
-    <!-- Table of Contents -->
-    <nav class="toc-fixed" id="toc">
-      <div class="mb-8">
-        <h3 class="text-lg font-bold text-gray-800 mb-4 serif">目录导航</h3>
-        <div class="space-y-1">
-          <a href="#introduction" class="toc-link text-sm">引言：算法时代的&#34;信息茧房&#34;之辩</a>
-          <a href="#algorithm-analysis" class="toc-link text-sm">算法机制分析</a>
-          <a href="#formation-impact" class="toc-link text-sm">信息茧房的形成与影响</a>
-          <a href="#case-studies" class="toc-link text-sm">案例分析</a>
-          <a href="#solutions" class="toc-link text-sm">解决方案探讨</a>
-          <a href="#conclusion" class="toc-link text-sm">结论与展望</a>
-        </div>
-      </div>
-
-      <div class="mt-auto pt-8 border-t border-gray-200">
-        <p class="text-xs text-gray-500 mb-2">研究报告</p>
-        <p class="text-sm font-medium text-gray-700">算法系统对信息茧房现象的影响</p>
-      </div>
+    <!-- Fixed Table of Contents -->
+    <nav class="toc-fixed">
+      <div class="toc-title">目录导航</div>
+      <a href="#introduction" class="toc-link">引言</a>
+      <a href="#packet-capture" class="toc-link">抓包技术</a>
+      <a href="#system-proxy" class="toc-link">• 系统代理抓包</a>
+      <a href="#client-certificate" class="toc-link">• 客户端证书校验绕过</a>
+      <a href="#server-certificate" class="toc-link">• 服务端证书校验绕过</a>
+      <a href="#tcp-capture" class="toc-link">• TCP协议抓包</a>
+      <a href="#quic-capture" class="toc-link">• QUIC协议抓包</a>
+      <a href="#parameter-analysis" class="toc-link">参数逆向分析</a>
+      <a href="#java-decompilation" class="toc-link">• Java层反编译</a>
+      <a href="#native-decompilation" class="toc-link">• Native层反编译</a>
+      <a href="#frida-application" class="toc-link">• Frida动态分析</a>
+      <a href="#xposed-framework" class="toc-link">• Xposed框架应用</a>
+      <a href="#security-bypass" class="toc-link">防护绕过</a>
+      <a href="#detection-bypass" class="toc-link">• 检测机制绕过</a>
+      <a href="#unpacking" class="toc-link">• 加壳与脱壳</a>
+      <a href="#frida-unpacking" class="toc-link">• Frida动态脱壳</a>
+      <a href="#aosp-customization" class="toc-link">• AOSP定制系统</a>
     </nav>
-
-    <!-- Mobile TOC Toggle -->
-    <button class="lg:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded-lg shadow-lg" onclick="toggleTOC()">
-      <i class="fas fa-bars text-gray-600"></i>
-    </button>
 
     <!-- Main Content -->
     <main class="main-content">
       <!-- Hero Section -->
-      <section class="px-8 py-16 bg-gradient-to-br from-slate-50 to-green-50">
-        <div class="hero-grid max-w-6xl mx-auto">
-          <div class="space-y-6">
-            <div class="inline-block px-4 py-2 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-              算法与社会 · 深度研究
+      <section class="hero-section">
+        <div class="container mx-auto px-8 py-16">
+          <div class="hero-grid">
+            <div>
+              	<h1 class="hero-title serif">APP逆向工程核心技术</h1>
+              	<p class="hero-subtitle">深度解析抓包、参数分析与防护绕过的完整技术体系</p>
+		<!-- 标签组（逆向分析、安全研究、数据采集） -->
+		<div class="flex flex-wrap gap-2">
+		  <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">逆向分析</span>
+		  <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">安全研究</span>
+		  <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">数据采集</span>
+		</div>
+		<!-- 信息组（日期、类型、作者） -->
+		<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
+		  <span class="flex items-center"><i class="fas fa-calendar-alt text-xs mr-1"></i>2025年7月</span>
+		  <span class="flex items-center"><i class="fas fa-book text-xs mr-1"></i>结构化学习报告</span>
+		  <span class="flex items-center"><i class="fas fa-user-edit text-xs mr-1"></i>Hale Shi</span>
+		</div>
             </div>
-
-            <h1 class="text-4xl lg:text-5xl font-bold serif leading-tight text-gray-900">
-              算法系统对<em class="text-green-700">信息茧房</em>现象的影响研究报告
-            </h1>
-
-            <p class="text-xl text-gray-600 leading-relaxed">
-              探索算法推荐系统如何通过个性化机制加剧信息同质化，以及构建多元化信息生态的可能路径
-            </p>
-
-            <!-- <div class="flex items-center space-x-6 text-sm text-gray-500"> -->
-            <div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
-              <!-- <span><i class="fas fa-calendar mr-2"></i>2025年8月</span>
-              <span><i class="fas fa-clock mr-2"></i>深度研究学习</span>
-              <span><i class="fas fa-user-edit text-xs mr-2"></i>Hale Shi</span> -->
-              <span class="flex items-center"><i class="fas fa-calendar-alt text-xs mr-1"></i>2025年7月</span>
-              <span class="flex items-center"><i class="fas fa-book text-xs mr-1"></i>结构化学习报告</span>
-              <span class="flex items-center"><i class="fas fa-user-edit text-xs mr-1"></i>Hale Shi</span>
+            <div class="hero-highlights">
+              <div class="highlight-card">
+                <i class="fas fa-network-wired text-2xl text-blue-600 mb-3"></i>
+                <h3 class="font-semibold mb-2">网络抓包</h3>
+                <p class="text-sm text-gray-600">全面覆盖HTTP/HTTPS、TCP、QUIC等协议的抓包技术</p>
+              </div>
+              <div class="highlight-card">
+                <i class="fas fa-code text-2xl text-green-600 mb-3"></i>
+                <h3 class="font-semibold mb-2">代码逆向</h3>
+                <p class="text-sm text-gray-600">Java与Native层的静态分析与动态调试技术</p>
+              </div>
+              <div class="highlight-card">
+                <i class="fas fa-shield-alt text-2xl text-purple-600 mb-3"></i>
+                <h3 class="font-semibold mb-2">安全防护</h3>
+                <p class="text-sm text-gray-600">证书校验、Root检测、加壳等防护机制的绕过方法</p>
+              </div>
+              <div class="highlight-card">
+                <i class="fas fa-tools text-2xl text-red-600 mb-3"></i>
+                <h3 class="font-semibold mb-2">工具实战</h3>
+                <p class="text-sm text-gray-600">Frida、Xposed、IDA Pro等工具的高级应用技巧</p>
+              </div>
             </div>
-          </div>
-
-          <div class="relative">
-            <img src="https://kimi-web-img.moonshot.cn/img/www.forwardpathway.com/ba9c086ecd23eb3160e648dbdfbaff38e8671ba4.jpg" alt="展示信息茧房概念的抽象科技背景图" class="w-full h-80 object-cover rounded-2xl shadow-2xl" size="large" aspect="wide" query="信息茧房 抽象科技背景" referrerpolicy="no-referrer" data-modified="1" data-score="0.00"/>
-            <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl"></div>
           </div>
         </div>
       </section>
 
       <!-- Introduction -->
-      <section id="introduction" class="px-8 py-16 max-w-6xl mx-auto">
-        <div class="prose prose-lg max-w-none">
-          <h2 class="text-3xl font-bold serif mb-8 text-gray-900">引言：算法时代的&#34;信息茧房&#34;之辩</h2>
+      <section id="introduction" class="container mx-auto px-8 py-16">
+        <div class="content-block">
+          <h2 class="section-title serif">引言</h2>
+          <p class="text-lg leading-relaxed mb-6">
+            APP逆向工程是一项复杂的技术，涉及网络通信分析、代码逆向、安全防护绕过等多个方面。本文旨在为初中级信息安全人员和爬虫工程师提供一个关于APP逆向工程技术的详解，内容涵盖抓包技术、参数逆向分析方法以及APP安全防护与逆向突破策略。通过掌握这些技术，读者可以更深入地理解APP的运行机制，发现潜在的安全漏洞，或实现特定的数据采集与分析目标。
+          </p>
 
-          <div class="grid lg:grid-cols-2 gap-12 mb-12">
-            <div>
-              <h3 class="text-xl font-semibold mb-4 text-gray-800">研究背景</h3>
-              <p class="text-gray-700 leading-relaxed mb-4">
-                随着互联网和人工智能技术的迅猛发展，算法推荐系统已成为信息传播和获取的重要工具。从新闻推荐到视频流媒体，从社交网络到电子商务，算法系统无处不在地影响着我们的日常生活<a href="https://www.tsinghua.edu.cn/info/1662/113104.htm" class="citation">[89]</a>。
-              </p>
-              <p class="text-gray-700 leading-relaxed">
-                然而，与此同时，关于算法系统导致&#34;信息茧房&#34;现象的担忧也随之而来。所谓&#34;信息茧房&#34;，是指用户在算法推荐的作用下，逐渐被困在一个信息同质化的环境中，只能接触到与自己兴趣和观点相符合的信息，难以获取多元化的信息和不同的观点<a href="https://www.tsinghua.edu.cn/info/1662/113104.htm" class="citation">[89]</a>
-                <a href="https://www.qstheory.cn/20250224/a950027b874248e7a8da7094b241a213/c.html" class="citation">[92]</a>。
-              </p>
+          <div class="pull-quote">
+            "在现代移动应用安全分析中，逆向工程技术不仅是理解应用行为的钥匙，更是发现安全漏洞、提升应用防护能力的重要工具。"
+          </div>
+        </div>
+      </section>
+
+      <!-- Packet Capture Section -->
+      <section id="packet-capture" class="container mx-auto px-8 py-8">
+        <h2 class="section-title serif">1. APP网络通信抓包技术</h2>
+
+        <!-- System Proxy Capture -->
+        <div id="system-proxy" class="content-block">
+          <h3 class="subsection-title serif">1.1 系统代理抓包与配置</h3>
+          <p class="mb-4">
+            在APP逆向工程中，<strong>抓包是分析网络通信行为、理解数据交互逻辑的关键步骤</strong>。系统代理抓包是最基础也是最常用的一种方式，通过将移动设备（如Android手机）的网络流量导向PC端的抓包工具（如Charles、Fiddler、Burp Suite、mitmproxy等），实现对HTTP/HTTPS等应用层协议的监控和分析。
+            <a href="https://juejin.cn/post/6874903020677791758" class="citation" target="_blank">[3]</a>
+            <a href="https://dead.blue/notes/2020/10/android-app-reverse-engineering-1/" class="citation" target="_blank">[483]</a>
+          </p>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">代理配置流程</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• 在PC端设置抓包工具监听特定端口</li>
+                <li>• 移动设备Wi-Fi设置中配置代理服务器</li>
+                <li>• 安装抓包工具的CA证书</li>
+                <li>• 验证HTTPS流量是否可正常捕获</li>
+              </ul>
             </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">常见代理检测绕过</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• 使用iptables强制流量转发</li>
+                <li>• 修改Smali代码移除代理检测</li>
+                <li>• 使用透明代理工具(Drony)</li>
+                <li>• ProxyDroid全局模式</li>
+              </ul>
+            </div>
+          </div>
 
-            <div class="bg-green-50 p-6 rounded-xl">
-              <h3 class="text-xl font-semibold mb-4 text-gray-800">核心概念界定</h3>
-              <div class="space-y-3">
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <h4 class="font-semibold text-gray-800">信息茧房</h4>
-                    <p class="text-sm text-gray-600">用户基于个人偏好选择性接触信息，形成自我隔离的信息环境</p>
-                  </div>
-                </div>
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <h4 class="font-semibold text-gray-800">过滤气泡</h4>
-                    <p class="text-sm text-gray-600">算法根据用户数据构建个性化信息环境，过滤异质信息<a href="https://www.sciencespo.fr/public/chaire-numerique/en/2023/06/08/student-essay-filter-bubbles-and-their-impact-on-social-media/" class="citation">[96]</a>
-                      <a href="https://jspds.cpds.co.id/index.php/jspds/article/download/11/8/71" class="citation">[97]</a>
-                    </p>
-                  </div>
-                </div>
-                <div class="flex items-start space-x-3">
-                  <div class="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <div>
-                    <h4 class="font-semibold text-gray-800">回音室效应</h4>
-                    <p class="text-sm text-gray-600">同质化社交圈子中相似观点不断重复强化，排斥异见</p>
-                  </div>
-                </div>
+          <div class="code-block">
+            <pre># 使用iptables将特定APP流量转发到透明代理
+iptables -t nat -A OUTPUT -p tcp ! -d 127.0.0.1 \
+  -m owner --uid-owner &lt;APP_UID&gt; --dport 0:65535 \
+  -j DNAT --to-destination 127.0.0.1:&lt;REDSOCKS_PORT&gt;</pre>
+          </div>
+        </div>
+
+        <!-- Client Certificate Bypass -->
+        <div id="client-certificate" class="content-block">
+          <h3 class="subsection-title serif">1.2 客户端证书校验绕过方法</h3>
+          <p class="mb-4">
+            HTTPS协议通过SSL/TLS加密通信内容，保证了数据传输的安全性。然而，<strong>从Android 7.0 (Nougat) 开始，系统默认不再信任用户安装的CA证书，除非APP显式配置为信任用户证书</strong>。
+            <a href="https://www.wangsu.com/news/content/blog/3906" class="citation" target="_blank">[105]</a>
+            <a href="https://www.eet-china.com/mp/a163354.html" class="citation" target="_blank">[140]</a>
+          </p>
+
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>方法类别</th>
+                  <th>具体方法</th>
+                  <th>描述</th>
+                  <th>适用场景/备注</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>证书管理</strong></td>
+                  <td>将抓包工具CA证书安装到系统信任区</td>
+                  <td>在已Root设备上，将CA证书复制到<code>/system/etc/security/cacerts/</code>并设置权限</td>
+                  <td>需要Root权限，适用于Android 7.0+</td>
+                </tr>
+                <tr>
+                  <td><strong>证书管理</strong></td>
+                  <td>修改APP的<code>network_security_config.xml</code>文件</td>
+                  <td>添加<code>&lt;trust-anchors&gt;</code>标签包含<code>&lt;certificates src="user" /&gt;</code></td>
+                  <td>需要反编译、修改APK并重打包签名</td>
+                </tr>
+                <tr>
+                  <td><strong>Hook框架</strong></td>
+                  <td>使用Xposed框架及其模块</td>
+                  <td>Hook APP中负责证书校验的API，使其直接返回验证成功</td>
+                  <td>需要安装Xposed框架，主要针对Java层校验</td>
+                </tr>
+                <tr>
+                  <td><strong>Hook框架</strong></td>
+                  <td>使用Frida进行Hook</td>
+                  <td>编写Frida脚本Hook SSL/TLS相关函数，强制其信任所有证书</td>
+                  <td>灵活，可应对Java层和部分Native层校验</td>
+                </tr>
+                <tr>
+                  <td><strong>环境/配置修改</strong></td>
+                  <td>降低Android系统版本或使用特定版本模拟器</td>
+                  <td>Android 7.0以下系统默认信任用户证书</td>
+                  <td>测试环境允许的情况下</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-sm text-gray-600 mt-2">Table 1: 客户端证书校验绕过方法总结</p>
+          </div>
+        </div>
+
+        <!-- Server Certificate Bypass -->
+        <div id="server-certificate" class="content-block">
+          <h3 class="subsection-title serif">1.3 服务端证书校验绕过技巧</h3>
+          <p class="mb-4">
+            服务端证书校验，通常指SSL Pinning（证书绑定），是一种增强HTTPS通信安全性的机制。在这种机制下，APP客户端不仅会校验服务端证书是否由受信任的CA签发，还会进一步校验服务端返回的证书是否与APP内置的特定证书完全一致。
+            <a href="https://blog.csdn.net/weixin_43845191/article/details/140968996" class="citation" target="_blank">[106]</a>
+            <a href="https://boogipop.com/2023/05/29/%5B%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%5DFRIDA%20HOOK%EF%BC%9A%E8%84%B1%E5%A3%B3%E3%80%81%E6%89%8B%E6%9C%BA%E6%8A%93%E5%8C%85%E7%BB%95%E8%BF%87SSL/" class="citation" target="_blank">[144]</a>
+          </p>
+
+          <div class="pull-quote">
+            当APP启用了SSL Pinning后，使用Charles或Fiddler等工具抓包时，可能会遇到"SSL handshake with client failed"等错误提示，或者APP直接提示网络错误且无法获取数据。
+          </div>
+        </div>
+
+        <!-- TCP Capture -->
+        <div id="tcp-capture" class="content-block">
+          <h3 class="subsection-title serif">1.4 TCP协议抓包与分析</h3>
+          <p class="mb-4">
+            虽然HTTP/HTTPS是APP网络通信中最常见的协议，但许多APP，特别是对性能和实时性要求较高的应用（如游戏、即时通讯、音视频流等），可能会直接使用TCP或UDP等底层协议进行数据传输，或者基于这些协议封装自定义的应用层协议。
+            <a href="https://zhuanlan.zhihu.com/p/98955951" class="citation" target="_blank">[12]</a>
+          </p>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">tcpdump使用</h4>
+              <div class="code-block">
+                <pre># 在Android设备上执行
+./tcpdump -i any -p -s 0 -w /sdcard/myCapture.pcap
+
+# 常用参数说明
+-i any   # 监听所有网络接口
+-p       # 不启用混杂模式
+-s 0     # 捕获完整数据包
+-w       # 写入文件</pre>
               </div>
+            </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">Wireshark过滤语法</h4>
+              <div class="code-block">
+                <pre># 基本过滤
+tcp.port == 8888
+ip.addr == 192.168.1.100 && tcp
+
+# 高级过滤
+tcp contains "keyword"
+tcp.flags.syn == 1
+tcp.analysis.retransmission</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUIC Capture -->
+        <div id="quic-capture" class="content-block">
+          <h3 class="subsection-title serif">1.5 QUIC协议抓包与挑战</h3>
+          <p class="mb-4">
+            QUIC（Quick UDP Internet Connections）是一种基于UDP的传输协议，由Google主导开发，旨在减少连接建立和数据传输的延迟，并提供更好的拥塞控制和安全性。QUIC协议默认集成了TLS 1.3加密，其数据包在传输层就已经加密，因此传统的基于TCP的抓包工具无法直接解析其内容。
+            <a href="https://www.cnblogs.com/eliwang/p/18023833" class="citation" target="_blank">[15]</a>
+          </p>
+
+          <div class="method-card">
+            <h4 class="font-semibold mb-2">QUIC抓包技术方案</h4>
+            <ul class="space-y-2">
+              <li><strong>Wireshark 3.0.0+</strong>：配置SSLKEYLOGFILE环境变量，支持QUIC协议解码</li>
+              <li><strong>mitmproxy</strong>：支持HTTPS和QUIC的中间人代理工具</li>
+              <li><strong>协议降级</strong>：通过Hook强制应用使用HTTP协议</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Parameter Analysis Section -->
+      <section id="parameter-analysis" class="container mx-auto px-8 py-8 bg-gray-50">
+        <h2 class="section-title serif">2. APP参数逆向分析方法</h2>
+
+        <!-- Java Decompilation -->
+        <div id="java-decompilation" class="content-block">
+          <h3 class="subsection-title serif">2.1 Java层代码反编译与分析</h3>
+          <p class="mb-4">
+            Java层代码是Android APP业务逻辑的主要承载部分，对其进行反编译和分析是APP逆向工程的核心环节。常用的Java反编译工具有<code>Jadx</code>、<code>JEB</code>、<code>Bytecode Viewer</code>等。
+            <a href="https://book.crifan.org/books/android_re_decompile_jadx/website/" class="citation" target="_blank">[17]</a>
+            <a href="https://developer.aliyun.com/article/1473482" class="citation" target="_blank">[18]</a>
+          </p>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">Jadx功能特点</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• 提供GUI界面和命令行版本</li>
+                <li>• 支持多平台（Windows/Linux/macOS）</li>
+                <li>• 显示"坏代码"和反混淆功能</li>
+                <li>• 强大的搜索功能（字符串、类名、方法名）</li>
+                <li>• 解析AndroidManifest.xml和资源文件</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">JEB高级功能</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• 支持多种处理器架构的Native代码反编译</li>
+                <li>• 处理混淆代码和重构分析</li>
+                <li>• 重建资源和混淆的XML文件</li>
+                <li>• 支持Dalvik和Native代码无缝调试</li>
+                <li>• 以太坊智能合约反编译支持</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Native Decompilation -->
+        <div id="native-decompilation" class="content-block">
+          <h3 class="subsection-title serif">2.2 Native层（C/C++）代码反编译与分析</h3>
+          <p class="mb-4">
+            Android APP除了Java/Kotlin代码外，还可以包含Native代码，通常以<code>.so</code>（共享对象库）文件的形式存在于APK的<code>lib</code>目录下。Native代码通常用于实现高性能计算、调用底层系统功能、复用已有的C/C++库，或者实现核心的加密算法和安全防护逻辑。
+          </p>
+
+          <div class="method-card">
+            <h4 class="font-semibold mb-2">IDA Pro分析流程</h4>
+            <ol class="list-decimal list-inside space-y-2">
+              <li>打开目标<code>.so</code>文件，IDA会自动进行初步分析</li>
+              <li>识别函数、字符串、导入表、导出表等</li>
+              <li>定位目标函数（JNI方法或关键函数）</li>
+              <li>分析汇编代码和伪代码（F5功能）</li>
+              <li>使用交叉引用和图形视图辅助分析</li>
+            </ol>
+          </div>
+
+          <div class="pull-quote">
+            通过分析伪代码的逻辑流程、变量赋值、函数调用等，可以推断出Native函数的功能和算法实现。动态调试也是分析Native代码的重要手段。
+          </div>
+        </div>
+
+        <!-- Frida Application -->
+        <div id="frida-application" class="content-block">
+          <h3 class="subsection-title serif">2.3 动态分析工具：Frida的应用与实战</h3>
+          <p class="mb-4">
+            Frida是一款强大的动态代码插桩（Dynamic Code Instrumentation）工具，支持Android、iOS、Windows、macOS、Linux等多种平台。它允许通过JavaScript脚本Hook应用程序的函数调用、修改内存数据、调用任意函数等，而无需修改目标应用的原始代码。
+            <a href="https://book.crifan.org/books/android_re_dynamic_debug/website/frida_debug_android/" class="citation" target="_blank">[31]</a>
+            <a href="https://iiong.com/reinforce-android-applications-for-unpacking-learning/" class="citation" target="_blank">[370]</a>
+          </p>
+
+          <div class="code-block">
+            <pre>// Frida基本Hook示例
+Java.perform(function() {
+    var targetClass = Java.use("com.example.TargetClass");
+    
+    targetClass.targetMethod.implementation = function(param1, param2) {
+        console.log("Hook成功！参数:", param1, param2);
+        
+        // 修改参数或返回值
+        var result = this.targetMethod(param1 + " modified", param2);
+        return result + " modified";
+    };
+});</pre>
+          </div>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">Frida核心功能</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• <code>Java.use(className)</code> - 获取Java类引用</li>
+                <li>• <code>Interceptor.attach(address, callbacks)</code> - Hook Native函数</li>
+                <li>• <code>Java.perform(fn)</code> - 在Java上下文中执行代码</li>
+                <li>• <code>Java.choose(className, callbacks)</code> - 枚举已加载的实例</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">Objection自动化工具</h4>
+              <ul class="space-y-2 text-sm">
+                <li>• <code>android sslpinning disable</code> - 自动禁用SSL Pinning</li>
+                <li>• <code>android root disable</code> - 绕过Root检测</li>
+                <li>• <code>android hooking watch</code> - 监控方法调用</li>
+                <li>• 支持非Root设备Frida Gadget注入</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Xposed Framework -->
+        <div id="xposed-framework" class="content-block">
+          <h3 class="subsection-title serif">2.4 动态分析工具：Xposed框架的应用与绕过</h3>
+          <p class="mb-4">
+            Xposed框架是一个运行于Android操作系统的动态HOOK框架，它允许在不修改APK文件的情况下，通过安装模块来改变系统和应用的行为。与Frida相比，Xposed主要专注于Java层的HOOK，并且需要修改系统环境。
+            <a href="https://blog.csdn.net/weixin_46734340/article/details/117756589" class="citation" target="_blank">[389]</a>
+          </p>
+
+          <div class="method-card">
+            <h4 class="font-semibold mb-2">Xposed模块开发核心</h4>
+            <div class="code-block">
+              <pre>public class MyModule implements IXposedHookLoadPackage {
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+        if (!lpparam.packageName.equals("target.package")) {
+            return;
+        }
+        
+        XposedHelpers.findAndHookMethod("com.example.TargetClass", 
+            lpparam.classLoader, "targetMethod", 
+            String.class, int.class, new XC_MethodHook() {
+                
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    // 方法执行前的处理
+                }
+                
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    // 方法执行后的处理
+                }
+            });
+    }
+}</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Security Bypass Section -->
+      <section id="security-bypass" class="container mx-auto px-8 py-8">
+        <h2 class="section-title serif">3. APP安全防护与逆向突破</h2>
+
+        <!-- Detection Bypass -->
+        <div id="detection-bypass" class="content-block">
+          <h3 class="subsection-title serif">3.1 APP常见检测机制与绕过方法</h3>
+
+          <h4 class="font-semibold text-lg mb-3">Root检测与绕过</h4>
+          <p class="mb-4">
+            Root检测是APP常用的一种安全防护手段，旨在识别运行环境是否具有Root权限。常见的Root检测方法包括检查特定路径下是否存在<code>su</code>等Root管理工具相关的可执行文件、检查系统属性、尝试执行需要Root权限的操作等。
+            <a href="https://blog.csdn.net/qq_52380836/article/details/136179658" class="citation" target="_blank">[201]</a>
+            <a href="https://www.cnblogs.com/eliwang/p/17950005" class="citation" target="_blank">[208]</a>
+          </p>
+
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>检测点类别</th>
+                  <th>具体检测方法</th>
+                  <th>应用层Hook绕过思路</th>
+                  <th>系统层定制/AOSP修改思路</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Root相关文件检测</strong></td>
+                  <td>检查<code>/system/bin/su</code>, <code>/system/xbin/su</code>等路径</td>
+                  <td>Hook文件访问函数，返回<code>false</code></td>
+                  <td>修改文件系统，移除或重命名<code>su</code>文件</td>
+                </tr>
+                <tr>
+                  <td><strong>Root相关属性检测</strong></td>
+                  <td>检查<code>ro.build.tags</code>是否为<code>test-keys</code></td>
+                  <td>Hook <code>SystemProperties.get()</code>方法</td>
+                  <td>修改<code>build.prop</code>文件，将<code>test-keys</code>改为<code>release-keys</code></td>
+                </tr>
+                <tr>
+                  <td><strong>Root管理应用检测</strong></td>
+                  <td>检查已安装应用列表中是否存在SuperSU等包名</td>
+                  <td>Hook包管理器相关API，过滤Root管理应用</td>
+                  <td>卸载或冻结Root管理应用</td>
+                </tr>
+                <tr>
+                  <td><strong>执行Root命令检测</strong></td>
+                  <td>尝试执行<code>su -c whoami</code>等命令</td>
+                  <td>Hook <code>Runtime.exec()</code>等方法</td>
+                  <td>修改<code>su</code>命令本身，返回非<code>root</code>结果</td>
+                </tr>
+                <tr>
+                  <td><strong>系统指纹检测</strong></td>
+                  <td>检查<code>android.os.Build</code>中的<code>FINGERPRINT</code>、<code>TAGS</code>等字段</td>
+                  <td>Hook <code>android.os.Build</code>类的相关方法</td>
+                  <td>修改AOSP源码中<code>deriveFingerprint()</code>等方法</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-sm text-gray-600 mt-2">Table 2: Root检测点及绕过思路</p>
+          </div>
+
+          <h4 class="font-semibold text-lg mb-3 mt-8">Xposed与Frida检测绕过</h4>
+          <div class="table-container">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>检测点类别</th>
+                  <th>具体检测方法</th>
+                  <th>应用层Hook/配置绕过思路</th>
+                  <th>系统层定制/AOSP修改思路</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Xposed检测</strong></td>
+                  <td>检查<code>de.robv.android.xposed.installer</code>等包名</td>
+                  <td>使用Xposed隐藏模块（XPrivacyLua）</td>
+                  <td>修改包管理器API，过滤Xposed Installer包名</td>
+                </tr>
+                <tr>
+                  <td><strong>Xposed检测</strong></td>
+                  <td>检查<code>/system/framework/XposedBridge.jar</code>等文件</td>
+                  <td>Hook文件访问函数，返回文件不存在</td>
+                  <td>修改文件系统，隐藏Xposed相关文件</td>
+                </tr>
+                <tr>
+                  <td><strong>Frida检测</strong></td>
+                  <td>检测<code>frida-server</code>进程名</td>
+                  <td>重命名<code>frida-server</code>二进制文件</td>
+                  <td>修改进程枚举相关的系统API</td>
+                </tr>
+                <tr>
+                  <td><strong>Frida检测</strong></td>
+                  <td>检测默认端口（27042/tcp）是否被监听</td>
+                  <td>启动时指定非默认端口</td>
+                  <td>修改网络连接状态相关的系统API</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="text-sm text-gray-600 mt-2">Table 3: Xposed与Frida检测点及绕过思路</p>
+          </div>
+        </div>
+
+        <!-- Unpacking -->
+        <div id="unpacking" class="content-block">
+          <h3 class="subsection-title serif">3.2 APP加壳（加固）技术与脱壳方法</h3>
+          <p class="mb-4">
+            APP加壳，也称为APP加固，是一种保护Android应用程序免受逆向工程和恶意篡改的技术。其核心思想是对原始的DEX文件（包含应用的Java代码）和so库文件（包含Native代码）进行加密、混淆、虚拟化等处理。
+            <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">[203]</a>
+            <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">[266]</a>
+          </p>
+
+          <!-- Mermaid diagram for unpacking process -->
+          <div class="mermaid-container">
+            <div class="mermaid-controls">
+              <button class="mermaid-control-btn zoom-in" title="放大">
+                <i class="fas fa-search-plus"></i>
+              </button>
+              <button class="mermaid-control-btn zoom-out" title="缩小">
+                <i class="fas fa-search-minus"></i>
+              </button>
+              <button class="mermaid-control-btn reset-zoom" title="重置">
+                <i class="fas fa-expand-arrows-alt"></i>
+              </button>
+              <button class="mermaid-control-btn fullscreen" title="全屏查看">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <div class="mermaid" id="mermaid-diagram">
+              graph TD
+              A["加密的DEX/So文件"] --> B["壳程序加载"]
+              B --> C{"内存中解密?"}
+              C -->|是| D["原始代码在内存中"]
+              C -->|否| E["继续加密状态"]
+              D --> F["Hook关键函数"]
+              D --> G["内存Dump"]
+              D --> H["定制ROM脱壳"]
+              F --> I["获取解密代码"]
+              G --> I
+              H --> I
+              I --> J["分析原始逻辑"]
+
+              style A fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000
+              style D fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
+              style I fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+              style J fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
+              style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+            </div>
+          </div>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">常见加壳技术</h4>
+              <ul class="space-y-2 text-sm">
+                <li><strong>整体加固（DEX加密）</strong>：壳程序将原始DEX文件整体加密，运行时解密加载</li>
+                <li><strong>抽取壳</strong>：将方法体指令抽取出来单独加密，原方法体用NOP填充</li>
+                <li><strong>VMP壳</strong>：将代码转换为自定义指令集字节码，内部解释器执行</li>
+                <li><strong>so加固</strong>：针对Native库的代码混淆、控制流平坦化、字符串加密</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">脱壳方法分类</h4>
+              <ul class="space-y-2 text-sm">
+                <li><strong>静态脱壳</strong>：分析壳程序解密算法，编写解密脚本</li>
+                <li><strong>动态脱壳</strong>：利用APP运行时内存中的数据</li>
+                <li><strong>内存Dump</strong>：分析内存布局，找到解密后的DEX/so并提取</li>
+                <li><strong>Hook关键函数</strong>：通过Frida/Xposed Hook加载DEX的关键函数</li>
+                <li><strong>定制ROM/插桩脱壳</strong>：修改AOSP源码，在虚拟机执行路径插入Dump代码</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Frida Unpacking -->
+        <div id="frida-unpacking" class="content-block">
+          <h3 class="subsection-title serif">3.3 使用Frida进行动态脱壳</h3>
+          <p class="mb-4">
+            Frida作为一款强大的动态代码插桩工具，在APP逆向工程中扮演着至关重要的角色，尤其在动态脱壳方面展现出其独特的优势。<strong>FRIDA-DEXDump</strong> 是一款基于Frida的经典Android脱壳工具，由hluwa开发并开源。
+            <a href="https://blog.csdn.net/qq_36301061/article/details/143532553" class="citation" target="_blank">[341]</a>
+            <a href="https://blog.csdn.net/weixin_38819889/article/details/123880076" class="citation" target="_blank">[344]</a>
+          </p>
+
+          <div class="method-card">
+            <h4 class="font-semibold mb-2">FRIDA-DEXDump脱壳步骤</h4>
+            <ol class="list-decimal list-inside space-y-2">
+              <li>确保目标Android设备已root，并安装匹配版本的frida-server</li>
+              <li>在PC上安装FRIDA-DEXDump：<code>pip install frida-dexdump</code></li>
+              <li>启动目标应用程序</li>
+              <li>在PC上运行：<code>frida-dexdump -U -f com.target.app</code></li>
+              <li>工具会自动附加到目标进程，搜索并dump内存中的DEX文件</li>
+            </ol>
+          </div>
+
+          <div class="code-block">
+            <pre>// 自定义Frida脱壳脚本示例
+Java.perform(function() {
+    var dexDump = function() {
+        // 搜索内存中的DEX文件特征
+        Process.enumerateRanges('r--').forEach(function(range) {
+            try {
+                var magic = range.base.readCString(4);
+                if (magic === 'dex\n') {
+                    console.log('Found DEX at:', range.base);
+                    
+                    // 计算DEX大小
+                    var fileSize = range.base.add(0x20).readUInt() * 4;
+                    console.log('DEX size:', fileSize);
+                    
+                    // Dump到文件
+                    var dexData = range.base.readByteArray(fileSize);
+                    var outPath = '/sdcard/dex_dump_' + range.base + '.dex';
+                    var outFile = new File(outPath, 'wb');
+                    outFile.write(dexData);
+                    outFile.close();
+                    
+                    console.log('Dumped to:', outPath);
+                }
+            } catch (e) {
+                // 忽略错误
+            }
+        });
+    };
+    
+    // 延时执行，确保DEX已加载
+    setTimeout(dexDump, 3000);
+});</pre>
+          </div>
+        </div>
+
+        <!-- AOSP Customization -->
+        <div id="aosp-customization" class="content-block">
+          <h3 class="subsection-title serif">3.4 基于AOSP定制系统进行高级逆向</h3>
+          <p class="mb-4">
+            基于Android Open Source Project (AOSP) 定制Android系统是进行高级APP逆向分析的一种强大手段。通过修改和编译AOSP源码，可以在系统层面实现对APP行为的深度监控和干预，这对于分析复杂的加固方案、绕过强效的检测机制以及进行底层Hook等场景非常有效。
+            <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">[266]</a>
+            <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">[270]</a>
+          </p>
+
+          <div class="tech-grid">
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">AOSP定制优势</h4>
+              <ul class="space-y-2 text-sm">
+                <li><strong>隐蔽性强</strong>：系统级修改更难被APP检测</li>
+                <li><strong>控制力强</strong>：可深度干预APP运行环境</li>
+                <li><strong>稳定性高</strong>：一次修改，长期有效</li>
+                <li><strong>功能强大</strong>：可同时实现脱壳、绕过检测等多种功能</li>
+              </ul>
+            </div>
+            <div class="tech-card">
+              <h4 class="font-semibold text-lg mb-3">FART脱壳机原理</h4>
+              <ul class="space-y-2 text-sm">
+                <li>修改ART虚拟机源码</li>
+                <li>在类初始化、方法执行时插入Dump代码</li>
+                <li>主动调用DEX中的各个函数</li>
+                <li>诱使壳解密对应的method指令区域</li>
+                <li>自动将内存中的DEX数据dump下来</li>
+              </ul>
             </div>
           </div>
 
           <div class="pull-quote">
-            &#34;学界和公众对&#39;信息茧房&#39;的形成机制、社会影响以及应对策略展开了广泛讨论。然而，关于算法系统是否必然导致信息茧房，以及信息茧房对个人和社会的影响程度，目前仍存在诸多争议。&#34;
-          </div>
-        </div>
-      </section>
-
-      <div class="section-divider"></div>
-
-      <!-- Algorithm Analysis -->
-      <section id="algorithm-analysis" class="px-8 py-16 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold serif mb-12 text-gray-900">算法机制分析：信息茧房的技术成因</h2>
-
-        <div class="grid lg:grid-cols-3 gap-8 mb-12">
-          <div class="bg-white p-6 rounded-xl shadow-lg">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-              <i class="fas fa-users text-blue-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">协同过滤算法</h3>
-            <p class="text-gray-600 text-sm leading-relaxed">
-              基于&#34;人以群分&#34;思想，通过分析相似用户群体的行为数据进行推荐，容易加剧信息同质化
-            </p>
+            定制AOSP系统进行逆向的优势在于其强大的控制能力和隐蔽性。然而，这种方法的技术门槛较高，需要熟悉Android系统架构、AOSP源码结构和编译流程。
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-              <i class="fas fa-file-alt text-green-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">基于内容推荐</h3>
-            <p class="text-gray-600 text-sm leading-relaxed">
-              分析物品内容特征和用户历史偏好进行匹配，严格根据用户兴趣推荐，是信息茧房的主要技术推手
-            </p>
-          </div>
+          <div class="method-card">
+            <h4 class="font-semibold mb-2">AOSP定制绕过检测示例</h4>
+            <div class="code-block">
+              <pre>// 修改系统属性，去除Root特征
+修改 build/core/main.mk:
+- BUILD_VERSION_TAGS := release-keys
++ BUILD_VERSION_TAGS := test-keys
 
-          <div class="bg-white p-6 rounded-xl shadow-lg">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-              <i class="fas fa-layer-group text-purple-600 text-xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold mb-3 text-gray-800">混合推荐模型</h3>
-            <p class="text-gray-600 text-sm leading-relaxed">
-              结合多种算法优点，如抖音的推荐系统结合协同过滤、双塔召回、Wide&amp;Deep模型等技术<a href="http://www.xinhuanet.com/tech/20250416/cb30d07cc64f497b938b82f551204e05/c.html" class="citation">[102]</a>
-            </p>
-          </div>
-        </div>
+修改 system/core/init/property_service.c:
+- __system_property_set("ro.secure", "0");
++ __system_property_set("ro.secure", "1");
 
-        <div class="mermaid-container">
-          <div class="mermaid-controls">
-            <button class="mermaid-control-btn zoom-in" title="放大">
-              <i class="fas fa-search-plus"></i>
-            </button>
-            <button class="mermaid-control-btn zoom-out" title="缩小">
-              <i class="fas fa-search-minus"></i>
-            </button>
-            <button class="mermaid-control-btn reset-zoom" title="重置">
-              <i class="fas fa-expand-arrows-alt"></i>
-            </button>
-            <button class="mermaid-control-btn fullscreen" title="全屏查看">
-              <i class="fas fa-expand"></i>
-            </button>
-          </div>
-          <div class="mermaid" id="mermaid-chart-1">
-            graph TD
-            A[&#34;用户行为数据&#34;] --&gt; B[&#34;算法分析处理&#34;]
-            B --&gt; C[&#34;个性化推荐&#34;]
-            C --&gt; D[&#34;用户互动反馈&#34;]
-            D --&gt; E[&#34;算法学习优化&#34;]
-            E --&gt; B
-            C --&gt; F[&#34;信息同质化&#34;]
-            F --&gt; G[&#34;信息茧房形成&#34;]
-
-            style A fill:#e8f4fd,stroke:#1e40af,stroke-width:2px,color:#1e293b
-            style B fill:#f0fdf4,stroke:#166534,stroke-width:2px,color:#1e293b
-            style C fill:#fef3c7,stroke:#92400e,stroke-width:2px,color:#1e293b
-            style D fill:#fce7f3,stroke:#be185d,stroke-width:2px,color:#1e293b
-            style E fill:#f0f9ff,stroke:#0369a1,stroke-width:2px,color:#1e293b
-            style F fill:#fef2f2,stroke:#dc2626,stroke-width:2px,color:#1e293b
-            style G fill:#fdf4ff,stroke:#a21caf,stroke-width:2px,color:#1e293b
-          </div>
-        </div>
-
-        <div class="prose prose-lg max-w-none">
-          <h3 class="text-2xl font-semibold mb-6 text-gray-800">算法如何塑造用户信息环境</h3>
-
-          <div class="mb-8">
-            <h4 class="text-lg font-semibold mb-3 text-gray-800">个性化推荐与信息同质化</h4>
-            <p class="text-gray-700 leading-relaxed mb-4">
-              个性化推荐是算法系统的核心功能，其初衷是为了帮助用户从海量信息中快速找到自己感兴趣的内容。然而，这种个性化推荐在带来便利的同时，也潜藏着导致信息同质化的风险。当算法根据用户的历史行为，不断推送与其既有兴趣和观点相符的内容时，用户接触到的信息范围就会变得越来越窄。
-            </p>
-            <p class="text-gray-700 leading-relaxed">
-              例如，在社交媒体平台上，用户点赞、评论和分享的内容，都会被算法记录下来，并作为后续推荐的依据。如果用户频繁地与某一类内容互动，算法就会认为用户对这类内容有强烈的兴趣，从而加大这类内容的推荐权重。
-            </p>
-          </div>
-
-          <div class="pull-quote">
-            &#34;算法推荐系统与用户之间存在着一个紧密的反馈循环。算法根据用户的行为数据进行推荐，而用户的点击、停留、点赞、评论等行为，又会反过来影响算法的推荐策略。&#34;
-          </div>
-
-          <div class="mb-8">
-            <h4 class="text-lg font-semibold mb-3 text-gray-800">算法偏见与信息窄化</h4>
-            <p class="text-gray-700 leading-relaxed">
-              算法偏见是指算法在决策过程中，对某些群体或个体产生系统性的、不公平的偏见。这种偏见可能源于训练数据的不平衡、算法设计者的主观偏见，或者算法模型的内在缺陷<a href="https://content-static.cctvnews.cctv.com/snow-book/index.html?item_id=10467626471997962928&amp;toc_style_id=feeds_default&amp;track_id=0FE0CF4F-1D5C-4D19-A461-24A111DF4FE2_769644943724&amp;share_to=wechat" class="citation">[104]</a>。
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <div class="section-divider"></div>
-
-      <!-- Formation and Impact -->
-      <section id="formation-impact" class="px-8 py-16 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold serif mb-12 text-gray-900">信息茧房的形成与影响：多维度剖析</h2>
-
-        <div class="grid lg:grid-cols-2 gap-12 mb-12">
-          <div>
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800">形成过程：技术、心理与社会互动</h3>
-
-            <div class="space-y-6">
-              <div class="bg-blue-50 p-6 rounded-xl">
-                <h4 class="font-semibold text-blue-800 mb-3">用户选择性接触与认知偏差</h4>
-                <p class="text-blue-700 text-sm leading-relaxed">
-                  人类具有天然的选择性接触倾向，即更倾向于接受和关注那些与自己既有观点、态度和价值观相符的信息，而回避或忽略那些与自己相悖的信息。这种心理机制被称为&#34;确认偏误&#34;。
-                </p>
-              </div>
-
-              <div class="bg-green-50 p-6 rounded-xl">
-                <h4 class="font-semibold text-green-800 mb-3">社交网络的同质化效应</h4>
-                <p class="text-green-700 text-sm leading-relaxed">
-                  在社交媒体上，用户倾向于与那些与自己兴趣、观点、背景相似的人建立联系，形成同质化的社交圈子。这种现象被称为&#34;同质性&#34;。
-                </p>
-              </div>
-
-              <div class="bg-purple-50 p-6 rounded-xl">
-                <h4 class="font-semibold text-purple-800 mb-3">平台商业逻辑与算法设计</h4>
-                <p class="text-purple-700 text-sm leading-relaxed">
-                  信息平台的商业逻辑是信息茧房形成的另一个重要推手。平台的首要目标是吸引用户、留住用户，并尽可能地延长用户的使用时间<a href="https://content-static.cctvnews.cctv.com/snow-book/index.html?item_id=10467626471997962928&amp;toc_style_id=feeds_default&amp;track_id=0FE0CF4F-1D5C-4D19-A461-24A111DF4FE2_769644943724&amp;share_to=wechat" class="citation">[104]</a>。
-                </p>
-              </div>
+// 隐藏特定文件访问
+修改 libc/bionic/open.cpp:
+if (strstr(path, "su") || strstr(path, "magisk")) {
+    errno = ENOENT;
+    return -1;
+}</pre>
             </div>
           </div>
-
-          <div>
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800">对个体认知的负面影响</h3>
-
-            <div class="space-y-4">
-              <div class="flex items-start space-x-4 p-4 bg-red-50 rounded-lg">
-                <i class="fas fa-eye-slash text-red-500 mt-1"></i>
-                <div>
-                  <h4 class="font-semibold text-red-800">视野狭窄与认知固化</h4>
-                  <p class="text-red-700 text-sm">长期沉浸在同质化信息环境中，个体对世界的认知变得片面和单一，思维方式变得僵化和刻板</p>
-                </div>
-              </div>
-
-              <div class="flex items-start space-x-4 p-4 bg-orange-50 rounded-lg">
-                <i class="fas fa-exclamation-triangle text-orange-500 mt-1"></i>
-                <div>
-                  <h4 class="font-semibold text-orange-800">偏见强化与群体极化</h4>
-                  <p class="text-orange-700 text-sm">同质化的信息环境不断强化既有偏见，群体观点变得更加极端</p>
-                </div>
-              </div>
-
-              <div class="flex items-start space-x-4 p-4 bg-yellow-50 rounded-lg">
-                <i class="fas fa-brain text-yellow-600 mt-1"></i>
-                <div>
-                  <h4 class="font-semibold text-yellow-800">批判性思维能力下降</h4>
-                  <p class="text-yellow-700 text-sm">被动接受算法推送信息，逐渐丧失主动寻求和辨别信息的能力</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-r from-red-50 to-orange-50 p-8 rounded-2xl">
-          <h3 class="text-2xl font-semibold mb-6 text-gray-800">对社会与媒体生态的影响</h3>
-
-          <div class="grid md:grid-cols-3 gap-6">
-            <div class="text-center">
-              <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-users-slash text-red-600 text-2xl"></i>
-              </div>
-              <h4 class="font-semibold text-red-800 mb-2">公共领域分化</h4>
-              <p class="text-red-700 text-sm">社会成员被分割成同质化信息孤岛，难以进行有效沟通和交流</p>
-            </div>
-
-            <div class="text-center">
-              <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-handshake-slash text-orange-600 text-2xl"></i>
-              </div>
-              <h4 class="font-semibold text-orange-800 mb-2">社会信任下降</h4>
-              <p class="text-orange-700 text-sm">加剧社会不信任感和对立情绪，为虚假信息和阴谋论传播提供土壤</p>
-            </div>
-
-            <div class="text-center">
-              <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-newspaper text-yellow-600 text-2xl"></i>
-              </div>
-              <h4 class="font-semibold text-yellow-800 mb-2">媒体多样性受损</h4>
-              <p class="text-yellow-700 text-sm">媒体倾向于生产&#34;爆款&#34;内容，导致内容同质化和浅薄化</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="section-divider"></div>
-
-      <!-- Case Studies -->
-      <section id="case-studies" class="px-8 py-16 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold serif mb-12 text-gray-900">案例分析：算法在不同平台的实践与影响</h2>
-
-        <div class="space-y-12">
-          <!-- Social Media Platforms -->
-          <div class="bg-white rounded-2xl p-8 shadow-lg">
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
-              <i class="fas fa-share-alt text-blue-500 mr-3"></i>
-              社交媒体平台：微博与抖音
-            </h3>
-
-            <div class="grid lg:grid-cols-2 gap-8">
-              <div>
-                <h4 class="text-lg font-semibold mb-4 text-gray-800">微博的&#34;关注&#34;机制与热搜榜单</h4>
-                <p class="text-gray-700 leading-relaxed mb-4">
-                  微博的&#34;关注&#34;机制是其信息分发的核心。用户通过关注其他用户来构建自己的信息流，这种机制本身就具有强烈的选择性。算法会进一步根据用户的互动行为对信息流进行排序和推荐。
-                </p>
-                <p class="text-gray-700 leading-relaxed">
-                  微博的&#34;热搜&#34;榜单反映了当前平台上最受关注的话题，但热搜榜单的形成也受到算法的深刻影响，使得那些具有争议性、情绪化的话题更容易登上热搜。
-                </p>
-              </div>
-
-              <div>
-                <h4 class="text-lg font-semibold mb-4 text-gray-800">抖音的&#34;推荐&#34;功能与&#34;一键破茧&#34;实践</h4>
-                <p class="text-gray-700 leading-relaxed mb-4">
-                  抖音的算法会根据用户的观看行为来精准推荐视频，这种&#34;沉浸式&#34;的推荐体验极易导致信息茧房的形成。为了应对质疑，抖音推出了&#34;一键破茧&#34;工具<a href="http://www.banyuetan.org/jqsjgbjx/detail/20250526/1000200033138991748242189356947067_1.html" class="citation">[43]</a>。
-                </p>
-                <p class="text-gray-700 leading-relaxed">
-                  抖音还通过开设&#34;安全与信任中心&#34;网站、举办开放日活动等方式，向公众阐释其推荐逻辑和干预机制<a href="http://www.xinhuanet.com/tech/20250416/cb30d07cc64f497b938b82f551204e05/c.html" class="citation">[102]</a>
-                  <a href="https://content-static.cctvnews.cctv.com/snow-book/index.html?item_id=10467626471997962928&amp;toc_style_id=feeds_default&amp;track_id=0FE0CF4F-1D5C-4D19-A461-24A111DF4FE2_769644943724&amp;share_to=wechat" class="citation">[104]</a>。
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- News Platforms -->
-          <div class="bg-white rounded-2xl p-8 shadow-lg">
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
-              <i class="fas fa-newspaper text-green-500 mr-3"></i>
-              新闻资讯平台：个性化新闻推荐
-            </h3>
-
-            <div class="mb-6">
-              <h4 class="text-lg font-semibold mb-3 text-gray-800">新闻推荐的同质化现象</h4>
-              <p class="text-gray-700 leading-relaxed">
-                个性化新闻推荐的同质化现象十分普遍。当用户频繁点击某一类新闻时，算法就会加大这类新闻的推荐权重，久而久之，用户的新闻客户端就会被同质化的内容所占据。
-              </p>
-            </div>
-
-            <div>
-              <h4 class="text-lg font-semibold mb-3 text-gray-800">对用户政治倾向与公共议题认知的影响</h4>
-              <p class="text-gray-700 leading-relaxed">
-                如果用户经常阅读某一政治立场的新闻，算法就会不断推送与该立场一致的新闻，这会导致用户的政治观点变得更加极化，难以进行理性的政治对话。
-              </p>
-            </div>
-          </div>
-
-          <!-- E-commerce Platforms -->
-          <div class="bg-white rounded-2xl p-8 shadow-lg">
-            <h3 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
-              <i class="fas fa-shopping-cart text-purple-500 mr-3"></i>
-              电子商务平台：淘宝与亚马逊
-            </h3>
-
-            <div class="grid lg:grid-cols-2 gap-8">
-              <div>
-                <h4 class="text-lg font-semibold mb-3 text-gray-800">商品推荐的&#34;过滤气泡&#34;</h4>
-                <p class="text-gray-700 leading-relaxed">
-                  在电商平台上，用户的浏览、搜索、购买行为都会被算法记录下来，用于生成个性化的商品推荐。这种机制使得用户更容易找到自己感兴趣的商品，但也可能导致&#34;过滤气泡&#34;的形成。
-                </p>
-              </div>
-
-              <div>
-                <h4 class="text-lg font-semibold mb-3 text-gray-800">推荐多样性与用户消费体验</h4>
-                <p class="text-gray-700 leading-relaxed">
-                  为了提升用户体验，电商平台开始关注推荐多样性的问题。一些平台会引入&#34;探索性推荐&#34;的机制，向用户推荐未曾接触过但可能感兴趣的商品。
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="section-divider"></div>
-
-      <!-- Solutions -->
-      <section id="solutions" class="px-8 py-16 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold serif mb-12 text-gray-900">解决方案探讨：如何警惕与&#34;破茧&#34;</h2>
-
-        <div class="grid lg:grid-cols-3 gap-8 mb-12">
-          <!-- Technical Solutions -->
-          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6">
-              <i class="fas fa-cogs text-white text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-4 text-gray-800">技术层面解决方案</h3>
-
-            <div class="space-y-4">
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">算法优化</h4>
-                <p class="text-blue-700 text-sm">增加推荐多样性与意外性，采用&#34;多臂老虎机&#34;等强化学习算法，在&#34;利用&#34;和&#34;探索&#34;间平衡<a href="https://www.ccf.org.cn/YOCSEF/Branches/Nanjing/News/2025-01-20/837700.shtml" class="citation">[105]</a>
-                </p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">算法透明化</h4>
-                <p class="text-blue-700 text-sm">向用户解释推荐原因，开设&#34;安全与信任中心&#34;，提升算法透明度<a href="http://www.xinhuanet.com/tech/20250416/cb30d07cc64f497b938b82f551204e05/c.html" class="citation">[102]</a>
-                  <a href="https://content-static.cctvnews.cctv.com/snow-book/index.html?item_id=10467626471997962928&amp;toc_style_id=feeds_default&amp;track_id=0FE0CF4F-1D5C-4D19-A461-24A111DF4FE2_769644943724&amp;share_to=wechat" class="citation">[104]</a>
-                </p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-blue-800 mb-2">用户控制权</h4>
-                <p class="text-blue-700 text-sm">提供&#34;一键破茧&#34;、&#34;茧房评估&#34;等功能，让用户自主调节兴趣标签权重<a href="http://www.banyuetan.org/jqsjgbjx/detail/20250526/1000200033138991748242189356947067_1.html" class="citation">[43]</a>
-                  <a href="https://www.zjwx.gov.cn/art/2025/5/26/art_1673573_58876825.html" class="citation">[103]</a>
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Platform &amp; Regulation -->
-          <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8">
-            <div class="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mb-6">
-              <i class="fas fa-building text-white text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-4 text-gray-800">平台与监管责任</h3>
-
-            <div class="space-y-4">
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">平台社会责任</h4>
-                <p class="text-green-700 text-sm">加强内容审核，推动算法伦理建设，保障用户权益<a href="https://content-static.cctvnews.cctv.com/snow-book/index.html?item_id=10467626471997962928&amp;toc_style_id=feeds_default&amp;track_id=0FE0CF4F-1D5C-4D19-A461-24A111DF4FE2_769644943724&amp;share_to=wechat" class="citation">[104]</a>
-                </p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">行业监管</h4>
-                <p class="text-green-700 text-sm">完善法律法规，加强监管力度，建立专门算法监管机构<a href="https://www.zjwx.gov.cn/art/2025/5/26/art_1673573_58876825.html" class="citation">[103]</a>
-                  <a href="http://society.people.com.cn/n1/2025/0224/c1008-40424102.html" class="citation">[106]</a>
-                </p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-green-800 mb-2">行业自律</h4>
-                <p class="text-green-700 text-sm">制定行业公约和自律规范，促进平台间交流合作</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- User Strategies -->
-          <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8">
-            <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mb-6">
-              <i class="fas fa-user text-white text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-4 text-gray-800">用户应对策略</h3>
-
-            <div class="space-y-4">
-              <div>
-                <h4 class="font-semibold text-purple-800 mb-2">提升信息素养</h4>
-                <p class="text-purple-700 text-sm">学习辨别虚假信息，培养批判性思维，对接触信息保持警惕</p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-purple-800 mb-2">主动寻求多元化</h4>
-                <p class="text-purple-700 text-sm">接触不同类型、不同立场、不同地域的媒体和信息平台</p>
-              </div>
-
-              <div>
-                <h4 class="font-semibold text-purple-800 mb-2">培养反思能力</h4>
-                <p class="text-purple-700 text-sm">定期反思信息消费习惯，保持开放包容心态</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-8 shadow-lg">
-          <h3 class="text-2xl font-semibold mb-6 text-gray-800">社交推荐与探索性推荐</h3>
-
-          <div class="grid lg:grid-cols-2 gap-8">
-            <div>
-              <h4 class="text-lg font-semibold mb-3 text-gray-800">社交推荐机制</h4>
-              <p class="text-gray-700 leading-relaxed mb-4">
-                社交推荐是指利用用户的社交关系网络进行内容推荐。与基于用户历史行为的推荐不同，社交推荐能够带来一些用户自己都没有意识到会感兴趣的内容<a href="https://appliednetsci.springeropen.com/articles/10.1007/s41109-024-00679-3" class="citation">[94]</a>。
-              </p>
-              <p class="text-gray-700 leading-relaxed">
-                例如，平台可以向用户推荐其好友喜欢或分享的内容。这种基于&#34;弱关系&#34;的推荐，往往能够跨越用户既有的兴趣圈，带来更加多元化的信息。
-              </p>
-            </div>
-
-            <div>
-              <h4 class="text-lg font-semibold mb-3 text-gray-800">探索性推荐策略</h4>
-              <p class="text-gray-700 leading-relaxed mb-4">
-                探索性推荐是指主动向用户推荐那些他们未曾接触过但可能感兴趣的内容。这种推荐机制旨在帮助用户发现新的兴趣点，拓展其知识边界。
-              </p>
-              <p class="text-gray-700 leading-relaxed">
-                为了实现探索性推荐，算法可以采用多种策略，如随机推荐热门内容，或根据用户长期兴趣推荐相关但不同领域的内容。
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div class="section-divider"></div>
-
-      <!-- Conclusion -->
-      <section id="conclusion" class="px-8 py-16 max-w-6xl mx-auto">
-        <h2 class="text-3xl font-bold serif mb-12 text-gray-900">结论与未来研究方向</h2>
-
-        <div class="grid lg:grid-cols-2 gap-12 mb-12">
-          <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-8">
-            <h3 class="text-xl font-bold mb-6 text-gray-800">研究结论总结</h3>
-
-            <div class="space-y-4">
-              <div class="flex items-start space-x-3">
-                <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                <p class="text-gray-700 text-sm">信息茧房的形成是技术、心理、社会和商业等多重因素共同作用的结果</p>
-              </div>
-
-              <div class="flex items-start space-x-3">
-                <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                <p class="text-gray-700 text-sm">算法推荐系统既提供便利，也潜藏着导致信息同质化的风险</p>
-              </div>
-
-              <div class="flex items-start space-x-3">
-                <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                <p class="text-gray-700 text-sm">信息茧房对个体认知、社会舆论和媒体生态都产生深远负面影响</p>
-              </div>
-
-              <div class="flex items-start space-x-3">
-                <i class="fas fa-check-circle text-green-500 mt-1"></i>
-                <p class="text-gray-700 text-sm">应对挑战需要技术、平台、监管和用户四个层面协同努力</p>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <h3 class="text-xl font-bold mb-6 text-gray-800">未来研究方向展望</h3>
-
-            <div class="space-y-6">
-              <div class="border-l-4 border-blue-500 pl-6">
-                <h4 class="font-semibold text-blue-800 mb-2">算法伦理与治理研究</h4>
-                <p class="text-blue-700 text-sm">探讨如何构建更加公平、透明、可解释的算法体系，建立有效的算法问责机制</p>
-              </div>
-
-              <div class="border-l-4 border-green-500 pl-6">
-                <h4 class="font-semibold text-green-800 mb-2">跨文化背景下的信息茧房现象</h4>
-                <p class="text-green-700 text-sm">研究不同政治制度、媒体环境、文化传统下信息茧房的形成机制和表现形式</p>
-              </div>
-
-              <div class="border-l-4 border-purple-500 pl-6">
-                <h4 class="font-semibold text-purple-800 mb-2">新兴技术对信息茧房的影响</h4>
-                <p class="text-purple-700 text-sm">探讨AIGC等新技术是否会加剧信息茧房，还是能够帮助用户&#34;破茧&#34;</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="pull-quote text-center">
-          &#34;应对信息茧房的挑战，需要从技术、平台、监管和用户四个层面协同努力，特别是通过算法优化和赋予用户更多控制权，来构建一个更加健康、多元和开放的信息生态系统。&#34;
         </div>
       </section>
 
       <!-- Footer -->
-      <footer class="bg-gray-900 text-white px-8 py-12">
-        <div class="max-w-6xl mx-auto text-center">
-          <p class="text-gray-400 mb-4">本报告基于现有学术研究和技术分析，旨在为理解和应对算法时代的&#34;信息茧房&#34;现象提供系统性框架</p>
-          <div class="flex justify-center space-x-8 text-sm text-gray-500">
-            <span>算法研究</span>
-            <span>信息传播</span>
-            <span>社会技术</span>
+      <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-8">
+          <div class="text-center">
+            <p class="text-gray-400 mb-4">本文档提供了APP逆向工程的全面技术指导，适用于安全研究人员和开发人员学习使用</p>
+            <p class="text-sm text-gray-500">发布日期：2025年07月27日</p>
           </div>
         </div>
       </footer>
     </main>
 
     <script>
-        // Initialize Mermaid
-        mermaid.initialize({ 
-            startOnLoad: true,
-            theme: 'base',
-            themeVariables: {
-                primaryColor: '#f8fafc',
-                primaryTextColor: '#1e293b',
-                primaryBorderColor: '#64748b',
-                lineColor: '#64748b',
-                secondaryColor: '#f1f5f9',
-                tertiaryColor: '#e2e8f0',
-                background: '#ffffff',
-                mainBkg: '#f8fafc',
-                secondBkg: '#f1f5f9',
-                tertiaryBkg: '#e2e8f0',
-                nodeBorder: '#64748b',
-                clusterBkg: '#f8fafc',
-                clusterBorder: '#64748b',
-                defaultLinkColor: '#64748b',
-                titleColor: '#1e293b',
-                edgeLabelBackground: '#ffffff',
-                nodeTextColor: '#1e293b'
-            },
-            flowchart: {
-                useMaxWidth: false,
-                htmlLabels: true,
-                curve: 'basis',
-                padding: 20
-            }
+        // Initialize Mermaid with enhanced configuration
+        document.addEventListener('DOMContentLoaded', function() {
+            mermaid.initialize({ 
+                startOnLoad: true,
+                theme: 'base',
+                themeVariables: {
+                    primaryColor: '#ffffff',
+                    primaryTextColor: '#2d3748',
+                    primaryBorderColor: '#2c5282',
+                    lineColor: '#4299e1',
+                    secondaryColor: '#f7fafc',
+                    tertiaryColor: '#e2e8f0',
+                    background: '#ffffff',
+                    mainBkg: '#ffffff',
+                    secondBkg: '#f7fafc',
+                    tertiaryBkg: '#e2e8f0',
+                    // Enhanced contrast colors for different node types
+                    primaryTextColor: '#2d3748',
+                    secondaryTextColor: '#4a5568',
+                    tertiaryTextColor: '#718096',
+                    // Node colors with good contrast
+                    primaryBorderColor: '#1e3a5f',
+                    primaryTextColor: '#2d3748',
+                    // Error and success colors
+                    errorBkgColor: '#fed7d7',
+                    errorTextColor: '#c53030',
+                    successBkgColor: '#c6f6d5',
+                    successTextColor: '#2f855a'
+                },
+                flowchart: {
+                    useMaxWidth: false,
+                    htmlLabels: true,
+                    curve: 'basis',
+                    padding: 20
+                },
+                sequence: {
+                    useMaxWidth: false,
+                    padding: 20
+                },
+                gantt: {
+                    useMaxWidth: false,
+                    padding: 20
+                }
+            });
+            
+            // Initialize mermaid controls after a short delay to allow rendering
+            setTimeout(initializeMermaidControls, 1000);
         });
 
         // Initialize Mermaid Controls for zoom and pan
@@ -1153,23 +1534,12 @@
             });
         }
 
-        // Initialize mermaid controls on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            initializeMermaidControls();
-        });
-
-        // Mobile TOC Toggle
-        function toggleTOC() {
-            const toc = document.getElementById('toc');
-            toc.classList.toggle('mobile-open');
-        }
-
         // Smooth scrolling for TOC links
         document.querySelectorAll('.toc-link').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();
-                const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
                 
                 if (targetElement) {
                     targetElement.scrollIntoView({
@@ -1177,55 +1547,44 @@
                         block: 'start'
                     });
                 }
-                
-                // Close mobile TOC
-                if (window.innerWidth <= 1024) {
-                    document.getElementById('toc').classList.remove('mobile-open');
-                }
             });
         });
 
-        // Active section highlighting
+        // Active TOC link highlighting
         window.addEventListener('scroll', function() {
-            const sections = document.querySelectorAll('section[id]');
-            const tocLinks = document.querySelectorAll('.toc-link');
+            const sections = document.querySelectorAll('section[id], div[id]');
+            const scrollPos = window.scrollY + 100;
             
-            let current = '';
             sections.forEach(section => {
                 const sectionTop = section.offsetTop;
-                const sectionHeight = section.clientHeight;
-                if (pageYOffset >= sectionTop - 200) {
-                    current = section.getAttribute('id');
-                }
-            });
-
-            tocLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('href') === '#' + current) {
-                    link.classList.add('active');
+                const sectionHeight = section.offsetHeight;
+                const sectionId = section.getAttribute('id');
+                
+                if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
+                    document.querySelectorAll('.toc-link').forEach(link => {
+                        link.classList.remove('active');
+                    });
+                    const activeLink = document.querySelector(`a[href="#${sectionId}"]`);
+                    if (activeLink) {
+                        activeLink.classList.add('active');
+                    }
                 }
             });
         });
 
-        // Close mobile TOC when clicking outside
-        document.addEventListener('click', function(e) {
-            const toc = document.getElementById('toc');
-            const toggleBtn = document.querySelector('button[onclick="toggleTOC()"]');
+        // Add hover effects to tech cards
+        document.querySelectorAll('.tech-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 15px 30px rgba(0,0,0,0.1)';
+            });
             
-            if (window.innerWidth <= 1024 && 
-                !toc.contains(e.target) && 
-                !toggleBtn.contains(e.target)) {
-                toc.classList.remove('mobile-open');
-            }
-        });
-
-        // Reset TOC on large screens
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 1024) {
-                document.getElementById('toc').classList.remove('mobile-open');
-            }
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'none';
+            });
         });
     </script>
-  
+  </body>
 
-</body></html>
+</html>
