@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hale 研究学习报告</title>
+    <title>我的网页链接</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -87,7 +87,9 @@
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            min-width: 150px;
         }
         
         .sort-btn:hover {
@@ -228,15 +230,23 @@
                 position: static;
                 margin-top: 20px;
                 justify-content: center;
+                width: fit-content;
+                margin-left: auto;
+                margin-right: auto;
             }
             
             .sort-controls {
                 flex-direction: column;
                 align-items: center;
+                gap: 10px;
             }
             
             .sort-btn {
-                width: 200px;
+                width: 100%;
+                max-width: 250px;
+                padding: 12px 20px;
+                text-align: center;
+                justify-content: center;
             }
         }
         
@@ -413,5 +423,3 @@
     </script>
 </body>
 </html>
-
-
