@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>昂克赛拉 · 十年养车计划书</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #c8102e; /* 马自达魂动红 */
+            --primary-dark: #9b0c23;
+            --primary-light: #fef2f2;
+            --secondary: #1e293b;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --success-light: #ecfdf5;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 40px -10px rgba(155, 12, 35, 0.2);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Roboto, sans-serif;
+            background: linear-gradient(180deg, #fff5f5 0%, #f8fafc 300px);
+            padding: env(safe-area-inset-top, 0) 1rem calc(2rem + env(safe-area-inset-bottom, 0px));
+            color: var(--secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 780px;
+            width: 100%;
+        }
+
+        /* ===== 头部 ===== */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: var(--radius-xl);
+            padding: 2rem 1.5rem 1.8rem;
+            margin-bottom: 1.5rem;
+            margin-top: 1.2rem;
+            box-shadow: var(--shadow-xl);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(200, 16, 46, 0.3) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header::after {
+            content: "🚗";
+            position: absolute;
+            right: 1.2rem;
+            bottom: 0.3rem;
+            font-size: 5rem;
+            opacity: 0.12;
+            transform: rotate(-8deg);
+            pointer-events: none;
+        }
+
+        .header-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(200, 16, 46, 0.9);
+            padding: 0.25rem 0.85rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.4rem;
+            position: relative;
+        }
+
+        .header .subtitle {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .header .sub {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .header .sub span {
+            background: rgba(255, 255, 255, 0.12);
+            padding: 0.3rem 0.85rem;
+            border-radius: 40px;
+            backdrop-filter: blur(8px);
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* ===== 进度统计卡片 ===== */
+        .stats-card {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: 1.2rem 1.3rem;
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        .stats-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .stats-label {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .stats-label .dot {
+            width: 9px;
+            height: 9px;
+            background: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .stats-count {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--gray-600);
+            background: var(--gray-100);
+            padding: 0.25rem 0.8rem;
+            border-radius: 40px;
+        }
+
+        .progress-bar-wrap {
+            height: 10px;
+            background: var(--gray-100);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 0.7rem;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #e63946 100%);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-bar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .stats-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--gray-500);
+        }
+
+        .stats-meta span strong {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* ===== 分组标题 ===== */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 1.5rem 0 0.8rem;
+            padding: 0 0.3rem;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0.3rem;
+        }
+
+        .section-title .icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .section-title .icon.weekly { background: #fef3c7; }
+        .section-title .icon.annual { background: #dbeafe; }
+        .section-title .icon.biennial { background: #e0e7ff; }
+        .section-title .icon.decade { background: #fce7f3; }
+
+        .section-title h2 {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--secondary);
+            letter-spacing: -0.01em;
+        }
+
+        .section-title .count {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            background: var(--gray-100);
+            padding: 0.15rem 0.6rem;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
+        /* ===== 任务卡片网格 ===== */
+        .grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1rem 1.1rem;
+            box-shadow: var(--shadow-sm);
+            border: 1.5px solid var(--gray-200);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: 0.85rem;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+            transform: scaleY(0);
+            transition: transform 0.25s ease;
+        }
+
+        .card:hover {
+            border-color: #f5c6cb;
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .card:active {
+            transform: scale(0.99);
+        }
+
+        .card.completed {
+            background: var(--success-light);
+            border-color: #a7f3d0;
+        }
+
+        .card.completed::before {
+            background: var(--success);
+            transform: scaleY(1);
+        }
+
+        .card.completed .task-title,
+        .card.completed .task-desc {
+            color: #6b7c8b;
+        }
+
+        .card.completed .task-title {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: var(--success);
+        }
+
+        .card.completed .task-desc strong {
+            color: #6b7c8b;
+        }
+
+        .card.completed .checkbox {
+            background: var(--success);
+            border-color: var(--success);
+            animation: checkBounce 0.4s ease;
+        }
+
+        @keyframes checkBounce {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .card.completed .checkbox::after {
+            content: "✓";
+            color: white;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            min-width: 24px;
+            border-radius: 8px;
+            border: 2px solid var(--gray-300);
+            background: white;
+            margin-top: 0.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .card:not(.completed):active .checkbox {
+            background: #fee2e2;
+            border-color: var(--primary);
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .task-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 0.4rem 0.6rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .task-title {
+            font-weight: 700;
+            font-size: 0.98rem;
+            color: var(--secondary);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .task-icon {
+            font-size: 1rem;
+        }
+
+        .task-frequency {
+            font-size: 0.68rem;
+            font-weight: 600;
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            padding: 0.15rem 0.6rem;
+            border-radius: 40px;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .task-frequency.weekly { background: #fef3c7; color: #92400e; }
+        .task-frequency.annual { background: #dbeafe; color: #1e40af; }
+        .task-frequency.biennial { background: #e0e7ff; color: #3730a3; }
+        .task-frequency.decade { background: #fce7f3; color: #9d174d; }
+
+        .task-desc {
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            line-height: 1.55;
+            padding-right: 0.3rem;
+        }
+
+        .task-desc strong {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        .card.completed .task-desc {
+            color: #8ca0b3;
+        }
+
+        /* 完成时间戳 */
+        .task-time {
+            margin-top: 0.5rem;
+            font-size: 0.72rem;
+            color: var(--success);
+            display: none;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: 500;
+        }
+
+        .card.completed .task-time {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== 底部说明 ===== */
+        .footer-note {
+            margin-top: 1.8rem;
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1.1rem 1.2rem;
+            font-size: 0.82rem;
+            color: var(--gray-600);
+            border: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .footer-note .note-item {
+            display: flex;
+            gap: 0.6rem;
+            align-items: flex-start;
+        }
+
+        .footer-note .note-icon {
+            flex-shrink: 0;
+            font-size: 1rem;
+            margin-top: 0.05rem;
+        }
+
+        .footer-note strong {
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* ===== 重置按钮 ===== */
+        .reset-button {
+            margin-top: 1.2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px -6px rgba(200, 16, 46, 0.4);
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .reset-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px -6px rgba(200, 16, 46, 0.5);
+        }
+
+        .reset-button:active {
+            transform: scale(0.98);
+        }
+
+        .reset-button.all-done {
+            background: var(--success);
+            box-shadow: 0 8px 20px -6px rgba(16, 185, 129, 0.4);
+        }
+
+        .reset-button.all-done:hover {
+            background: #059669;
+            box-shadow: 0 12px 24px -6px rgba(16, 185, 129, 0.5);
+        }
+
+        /* ===== 完成庆祝弹窗 ===== */
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(4px);
+            padding: 1rem;
+        }
+
+        .celebration.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .celebration-card {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: 2rem 1.8rem;
+            text-align: center;
+            max-width: 320px;
+            width: 100%;
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .celebration.show .celebration-card {
+            transform: scale(1);
+        }
+
+        .celebration-emoji {
+            font-size: 3.5rem;
+            margin-bottom: 0.8rem;
+            display: block;
+        }
+
+        .celebration h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .celebration p {
+            font-size: 0.9rem;
+            color: var(--gray-600);
+            margin-bottom: 1.3rem;
+            line-height: 1.6;
+        }
+
+        .celebration-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            padding: 0.75rem 1.8rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .celebration-btn:hover {
+            background: #059669;
+        }
+
+        /* 彩带效果 */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            z-index: 101;
+            animation: confetti-fall 3s ease-in forwards;
+        }
+
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* 小屏优化 */
+        @media (max-width: 480px) {
+            body {
+                padding-top: 0.5rem;
+            }
+            .header {
+                padding: 1.5rem 1.2rem 1.4rem;
+                margin-top: 0.8rem;
+                border-radius: 20px;
+            }
+            .header h1 {
+                font-size: 1.4rem;
+            }
+            .header::after {
+                font-size: 4rem;
+                right: 0.8rem;
+            }
+            .header .sub span {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.7rem;
+            }
+            .stats-card {
+                padding: 1rem;
+            }
+            .card {
+                padding: 0.9rem 1rem;
+                gap: 0.7rem;
+                border-radius: 14px;
+            }
+            .task-title {
+                font-size: 0.93rem;
+            }
+            .task-desc {
+                font-size: 0.82rem;
+            }
+            .checkbox {
+                width: 22px;
+                height: 22px;
+                min-width: 22px;
+                margin-top: 0.1rem;
+            }
+            .section-title h2 {
+                font-size: 0.92rem;
+            }
+            .section-title .icon {
+                width: 28px;
+                height: 28px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-tag">⚡ 养车计划</div>
+            <h1>昂克赛拉 · 十年养护计划</h1>
+            <div class="subtitle">2015款 · 低频使用 · 再战十年</div>
+            <div class="sub">
+                <span>📅 2015款</span>
+                <span>⚡ 低频使用</span>
+                <span>🎯 再开10年</span>
+                <span>🔧 按时间保养</span>
+            </div>
+        </div>
+
+        <!-- 进度统计 -->
+        <div class="stats-card">
+            <div class="stats-top">
+                <div class="stats-label">
+                    <span class="dot"></span>
+                    当前循环进度
+                </div>
+                <div class="stats-count" id="progressDisplay">0 / 8 已完成</div>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div class="stats-meta">
+                <span>完成率：<strong id="percentDisplay">0%</strong></span>
+                <span id="cycleStartDisplay">本轮开始：--</span>
+            </div>
+        </div>
+
+        <!-- 每周任务 -->
+        <div class="section-title">
+            <div class="icon weekly">🔄</div>
+            <h2>日常高频</h2>
+            <span class="count" id="count-weekly">1项</span>
+        </div>
+        <div class="grid" id="grid-weekly">
+            <div class="card" data-task-id="weekly-drive" data-group="weekly">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🚙</span>每周启动行驶</span>
+                        <span class="task-frequency weekly">每周 / 10天</span>
+                    </div>
+                    <div class="task-desc">
+                        <strong>上路行驶20分钟以上</strong>，不要原地怠速。让发电机给电瓶充电，同时让油液循环、轮胎改变受力点。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每年任务 -->
+        <div class="section-title">
+            <div class="icon annual">📅</div>
+            <h2>每年必做</h2>
+            <span class="count" id="count-annual">3项</span>
+        </div>
+        <div class="grid" id="grid-annual">
+            <div class="card" data-task-id="annual-oil" data-group="annual">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🛢️</span>更换机油 & 机滤</span>
+                        <span class="task-frequency annual">每年</span>
+                    </div>
+                    <div class="task-desc">
+                        <strong>0W-20 全合成机油</strong>，即便一年只跑几百公里也必须每年换。旧机油氧化会失去保护能力。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" data-task-id="annual-filters" data-group="annual">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🌬️</span>检查 / 更换空调滤 & 空气滤</span>
+                        <span class="task-frequency annual">每年</span>
+                    </div>
+                    <div class="task-desc">
+                        长期停放容易受潮发霉。开空调有异味直接换新，空气滤视脏污程度决定。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" data-task-id="annual-tire-check" data-group="annual">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🛞</span>轮胎状态 & 胎压检查</span>
+                        <span class="task-frequency annual">每年 / 停放前</span>
+                    </div>
+                    <div class="task-desc">
+                        重点查胎侧裂纹、老化。10年轮胎即使花纹深也<strong>建议直接更换</strong>。停放前胎压充到标准上限。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每两年任务 -->
+        <div class="section-title">
+            <div class="icon biennial">⏱️</div>
+            <h2>两年周期</h2>
+            <span class="count" id="count-biennial">2项</span>
+        </div>
+        <div class="grid" id="grid-biennial">
+            <div class="card" data-task-id="biennial-brakefluid" data-group="biennial">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🛑</span>更换刹车油</span>
+                        <span class="task-frequency biennial">每2年</span>
+                    </div>
+                    <div class="task-desc">
+                        刹车油吸水会导致沸点降低、刹车变软。<strong>无论里程多少，2年必须换</strong>。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" data-task-id="biennial-carbon" data-group="biennial">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">💨</span>积碳清除剂 & 高速行驶</span>
+                        <span class="task-frequency biennial">每2年 / 2万km</span>
+                    </div>
+                    <div class="task-desc">
+                        创驰蓝天发动机对积碳敏感。加一瓶原厂积碳清除剂，然后<strong>跑20分钟高速或快速路</strong>。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10年节点任务 -->
+        <div class="section-title">
+            <div class="icon decade">⚠️</div>
+            <h2>十年节点（重点关注）</h2>
+            <span class="count" id="count-decade">2项</span>
+        </div>
+        <div class="grid" id="grid-decade">
+            <div class="card" data-task-id="decade-coolant" data-group="decade">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">🌡️</span>冷却液冰点/酸碱度检测</span>
+                        <span class="task-frequency decade">10年节点</span>
+                    </div>
+                    <div class="task-desc">
+                        2015款昂克赛拉首次10年/20万公里换冷却液。已到临界点，<strong>下次保养务必检测</strong>，必要时更换。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" data-task-id="decade-expansionvalve" data-group="decade">
+                <div class="checkbox"></div>
+                <div class="card-content">
+                    <div class="task-header">
+                        <span class="task-title"><span class="task-icon">❄️</span>空调膨胀阀垫片检查</span>
+                        <span class="task-frequency decade">10年节点</span>
+                    </div>
+                    <div class="task-desc">
+                        老款昂克赛拉通病：膨胀阀垫片可能生锈导致冷媒泄漏。<strong>趁保养时让师傅看一眼</strong>，避免大修。
+                    </div>
+                    <div class="task-time">
+                        <span>✅</span>
+                        <span class="time-text"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部说明 -->
+        <div class="footer-note">
+            <div class="note-item">
+                <span class="note-icon">🔁</span>
+                <div><strong>循环机制：</strong>点击卡片标记完成，系统会自动记录完成时间。全部完成后可重置，开启下一轮养护。</div>
+            </div>
+            <div class="note-item">
+                <span class="note-icon">⚙️</span>
+                <div><strong>核心原则：</strong>低频用车，按时间保养比按里程更重要。每周动一动，油液按时换，橡胶件勤检查。</div>
+            </div>
+            <div class="note-item">
+                <span class="note-icon">💾</span>
+                <div><strong>数据保存：</strong>所有完成记录自动保存在本地浏览器中，无需账号，刷新不丢失。</div>
+            </div>
+        </div>
+
+        <!-- 重置按钮 -->
+        <button class="reset-button" id="resetCycleBtn">
+            <span>🔄</span> 重置本轮保养计划
+        </button>
+    </div>
+
+    <!-- 完成庆祝弹窗 -->
+    <div class="celebration" id="celebration">
+        <div class="celebration-card">
+            <span class="celebration-emoji">🎉</span>
+            <h3>本轮保养全部完成！</h3>
+            <p>你的昂克赛拉状态良好，可以安心再战一年了！记得定期每周发动行驶哦~</p>
+            <button class="celebration-btn" onclick="closeCelebration()">好的，开始下一轮</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const cards = document.querySelectorAll('.card[data-task-id]');
+            const progressDisplay = document.getElementById('progressDisplay');
+            const progressBar = document.getElementById('progressBar');
+            const percentDisplay = document.getElementById('percentDisplay');
+            const cycleStartDisplay = document.getElementById('cycleStartDisplay');
+            const resetBtn = document.getElementById('resetCycleBtn');
+            const celebration = document.getElementById('celebration');
+            const totalTasks = cards.length;
+
+            const STORAGE_KEY = 'mazda3_maintenance_cycle';
+            const STORAGE_START_KEY = 'mazda3_cycle_start';
+
+            // 格式化时间
+            function formatTime(timestamp) {
+                if (!timestamp) return '';
+                const d = new Date(timestamp);
+                const now = new Date();
+                const isToday = d.toDateString() === now.toDateString();
+                const pad = n => String(n).padStart(2, '0');
+
+                if (isToday) {
+                    return `今天 ${pad(d.getHours())}:${pad(d.getMinutes())} 完成`;
+                }
+
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (d.toDateString() === yesterday.toDateString()) {
+                    return `昨天 ${pad(d.getHours())}:${pad(d.getMinutes())} 完成`;
+                }
+
+                return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())} 完成`;
+            }
+
+            function formatStartDate(timestamp) {
+                if (!timestamp) return '本轮开始：--';
+                const d = new Date(timestamp);
+                const pad = n => String(n).padStart(2, '0');
+                return `本轮开始：${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+            }
+
+            // 加载状态
+            function loadState() {
+                try {
+                    const saved = localStorage.getItem(STORAGE_KEY);
+                    if (saved) {
+                        const data = JSON.parse(saved);
+                        // 兼容旧格式（数组）和新格式（对象 {id: timestamp}）
+                        const completedData = Array.isArray(data) ? Object.fromEntries(data.map(id => [id, Date.now()])) : data;
+
+                        cards.forEach(card => {
+                            const taskId = card.getAttribute('data-task-id');
+                            const timeEl = card.querySelector('.time-text');
+
+                            if (completedData[taskId]) {
+                                card.classList.add('completed');
+                                timeEl.textContent = formatTime(completedData[taskId]);
+                                card.dataset.completedAt = completedData[taskId];
+                            } else {
+                                card.classList.remove('completed');
+                                delete card.dataset.completedAt;
+                            }
+                        });
+                    }
+
+                    const startDate = localStorage.getItem(STORAGE_START_KEY);
+                    cycleStartDisplay.textContent = formatStartDate(startDate);
+                } catch (e) {
+                    console.warn('读取状态失败', e);
+                }
+                updateProgress();
+            }
+
+            // 保存状态
+            function saveState() {
+                const completedData = {};
+                cards.forEach(card => {
+                    if (card.classList.contains('completed')) {
+                        const taskId = card.getAttribute('data-task-id');
+                        completedData[taskId] = parseInt(card.dataset.completedAt) || Date.now();
+                    }
+                });
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(completedData));
+
+                // 如果是首次开始本轮（第一个任务被勾选），记录开始时间
+                if (Object.keys(completedData).length === 1 && !localStorage.getItem(STORAGE_START_KEY)) {
+                    localStorage.setItem(STORAGE_START_KEY, Date.now().toString());
+                    cycleStartDisplay.textContent = formatStartDate(localStorage.getItem(STORAGE_START_KEY));
+                }
+
+                updateProgress();
+            }
+
+            // 更新进度
+            function updateProgress() {
+                const completedCount = document.querySelectorAll('.card.completed').length;
+                const percent = Math.round((completedCount / totalTasks) * 100);
+
+                progressDisplay.textContent = `${completedCount} / ${totalTasks} 已完成`;
+                progressBar.style.width = percent + '%';
+                percentDisplay.textContent = percent + '%';
+
+                // 更新分组计数
+                ['weekly', 'annual', 'biennial', 'decade'].forEach(group => {
+                    const groupCards = document.querySelectorAll(`.card[data-group="${group}"]`);
+                    const groupCompleted = document.querySelectorAll(`.card[data-group="${group}"].completed`).length;
+                    const countEl = document.getElementById(`count-${group}`);
+                    if (countEl) {
+                        countEl.textContent = `${groupCompleted}/${groupCards.length} 完成`;
+                    }
+                });
+
+                if (completedCount === totalTasks) {
+                    resetBtn.innerHTML = '<span>🎉</span> 全部完成！点击开启下一轮';
+                    resetBtn.classList.add('all-done');
+                } else {
+                    resetBtn.innerHTML = '<span>🔄</span> 重置本轮保养计划';
+                    resetBtn.classList.remove('all-done');
+                }
+            }
+
+            // 切换卡片
+            function toggleCard(card) {
+                const wasCompleted = card.classList.contains('completed');
+                card.classList.toggle('completed');
+                const timeEl = card.querySelector('.time-text');
+
+                if (card.classList.contains('completed')) {
+                    // 标记完成
+                    const now = Date.now();
+                    card.dataset.completedAt = now;
+                    timeEl.textContent = formatTime(now);
+
+                    // 震动反馈
+                    if (navigator.vibrate) navigator.vibrate(15);
+
+                    // 检查是否全部完成
+                    const completedCount = document.querySelectorAll('.card.completed').length;
+                    if (completedCount === totalTasks) {
+                        setTimeout(showCelebration, 400);
+                    }
+                } else {
+                    // 取消完成
+                    delete card.dataset.completedAt;
+                    timeEl.textContent = '';
+                }
+
+                saveState();
+            }
+
+            // 彩带效果
+            function createConfetti() {
+                const colors = ['#c8102e', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899'];
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                    confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                    if (Math.random() > 0.5) confetti.style.borderRadius = '50%';
+                    document.body.appendChild(confetti);
+                    setTimeout(() => confetti.remove(), 3500);
+                }
+            }
+
+            function showCelebration() {
+                celebration.classList.add('show');
+                createConfetti();
+            }
+
+            window.closeCelebration = function() {
+                celebration.classList.remove('show');
+                resetCycle();
+            };
+
+            // 重置
+            function resetCycle() {
+                cards.forEach(card => {
+                    card.classList.remove('completed');
+                    delete card.dataset.completedAt;
+                    const timeEl = card.querySelector('.time-text');
+                    if (timeEl) timeEl.textContent = '';
+                });
+                localStorage.removeItem(STORAGE_KEY);
+                localStorage.removeItem(STORAGE_START_KEY);
+                cycleStartDisplay.textContent = '本轮开始：--';
+                saveState();
+                if (navigator.vibrate) navigator.vibrate([10, 30, 10]);
+                // 滚动回顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            // 卡片点击
+            cards.forEach(card => {
+                card.addEventListener('click', (e) => {
+                    toggleCard(card);
+                });
+            });
+
+            // 重置按钮
+            resetBtn.addEventListener('click', () => {
+                const completedCount = document.querySelectorAll('.card.completed').length;
+                if (completedCount === totalTasks) {
+                    resetCycle();
+                } else {
+                    if (confirm('确定要重置所有保养项目吗？当前完成进度将清空。')) {
+                        resetCycle();
+                    }
+                }
+            });
+
+            // 点击弹窗背景关闭
+            celebration.addEventListener('click', (e) => {
+                if (e.target === celebration) {
+                    closeCelebration();
+                }
+            });
+
+            // 每分钟刷新一次时间显示（让"今天/昨天"自动更新）
+            setInterval(() => {
+                cards.forEach(card => {
+                    if (card.classList.contains('completed') && card.dataset.completedAt) {
+                        const timeEl = card.querySelector('.time-text');
+                        timeEl.textContent = formatTime(parseInt(card.dataset.completedAt));
+                    }
+                });
+            }, 60000);
+
+            // 初始化
+            loadState();
+
+            // 多标签同步
+            window.addEventListener('storage', (e) => {
+                if (e.key === STORAGE_KEY || e.key === STORAGE_START_KEY) {
+                    loadState();
+                }
+            });
+        })();
+    </script>
+</body>
+</html><!--33854673102573747210091718-->
