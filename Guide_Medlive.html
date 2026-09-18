@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>某mai通 AES登录逆向实战教学 | HaleShi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        dark: '#0f172a',
+                        darker: '#070b14',
+                        card: '#1e293b',
+                        'card-light': '#334155',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        info: '#3b82f6',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Consolas', 'Monaco', 'monospace'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gradient {
+                background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .bg-grid {
+                background-image: 
+                    linear-gradient(rgba(99, 102, 241, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(99, 102, 241, 0.05) 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .glass {
+                background: rgba(30, 41, 59, 0.7);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+            }
+            .code-header {
+                background: linear-gradient(90deg, #2d333b 0%, #22272e 100%);
+            }
+            .flow-line {
+                position: relative;
+            }
+            .flow-line::after {
+                content: '';
+                position: absolute;
+                left: 24px;
+                top: 48px;
+                bottom: -16px;
+                width: 2px;
+                background: linear-gradient(to bottom, #6366f1, transparent);
+            }
+            .flow-line:last-child::after {
+                display: none;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-track {
+                background: #1e293b;
+                border-radius: 3px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background: #475569;
+                border-radius: 3px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+                background: #64748b;
+            }
+            .chapter-content {
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease;
+            }
+            .chapter-open .chapter-content {
+                max-height: 10000px;
+            }
+            .chapter-open .chapter-arrow {
+                transform: rotate(90deg);
+            }
+            @keyframes pulse-ring {
+                0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+                70% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+            }
+            .pulse-ring {
+                animation: pulse-ring 2s infinite;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-slate-200 font-sans bg-grid min-h-screen">
+    <!-- 顶部导航 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <i class="fa fa-lock text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold text-white">AES登录逆向实战</h1>
+                        <p class="text-xs text-slate-400">某mai通模拟登录教学</p>
+                    </div>
+                </div>
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="#overview" class="text-sm text-slate-300 hover:text-primary transition-colors">总览</a>
+                    <a href="#chapter1" class="text-sm text-slate-300 hover:text-primary transition-colors">抓包</a>
+                    <a href="#chapter3" class="text-sm text-slate-300 hover:text-primary transition-colors">找Key</a>
+                    <a href="#chapter4" class="text-sm text-slate-300 hover:text-primary transition-colors">找IV</a>
+                    <a href="#chapter6" class="text-sm text-slate-300 hover:text-primary transition-colors">代码</a>
+                    <a href="#summary" class="text-sm text-slate-300 hover:text-primary transition-colors">总结</a>
+                </div>
+                <div class="text-right">
+                    <div class="text-sm font-medium text-gradient">HaleShi</div>
+                    <div class="text-xs text-slate-500">逆向教学</div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero区域 -->
+    <header class="pt-28 pb-16 px-4 relative overflow-hidden">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+        <div class="max-w-4xl mx-auto text-center relative z-10">
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6">
+                <i class="fa fa-graduation-cap"></i>
+                <span>Python爬虫逆向实战教程</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
+                从零搞懂 <span class="text-gradient">AES Key & IV</span>
+                <br>到底从哪来
+            </h1>
+            <!-- 作者署名 -->
+            <div class="flex items-center justify-center gap-3 mb-8">
+                <div class="h-px w-12 bg-gradient-to-r from-transparent to-primary/60"></div>
+                <div class="flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-primary/20">
+                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <i class="fa fa-user text-white text-xs"></i>
+                    </div>
+                    <span class="text-sm font-medium text-slate-200">作者：<span class="text-gradient font-semibold">HaleShi</span></span>
+                </div>
+                <div class="h-px w-12 bg-gradient-to-l from-transparent to-primary/60"></div>
+            </div>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto mb-8 leading-relaxed">
+                以某mai通网站登录为例，完整拆解AES-CBC加密逆向全过程，从抓包定位到代码复刻，手把手带你搞懂每个关键环节。
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <div class="glass px-5 py-3 rounded-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-info/20 flex items-center justify-center text-info">
+                        <i class="fa fa-list-ol"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xl font-bold text-white">10</div>
+                        <div class="text-xs text-slate-400">实战步骤</div>
+                    </div>
+                </div>
+                <div class="glass px-5 py-3 rounded-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-warning/20 flex items-center justify-center text-warning">
+                        <i class="fa fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xl font-bold text-white">2</div>
+                        <div class="text-xs text-slate-400">隐患修复</div>
+                    </div>
+                </div>
+                <div class="glass px-5 py-3 rounded-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-success/20 flex items-center justify-center text-success">
+                        <i class="fa fa-code"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xl font-bold text-white">JS↔Py</div>
+                        <div class="text-xs text-slate-400">逐行对照</div>
+                    </div>
+                </div>
+                <div class="glass px-5 py-3 rounded-xl flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center text-accent">
+                        <i class="fa fa-key"></i>
+                    </div>
+                    <div class="text-left">
+                        <div class="text-xl font-bold text-white">AES-CBC</div>
+                        <div class="text-xs text-slate-400">加密算法</div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-center gap-3">
+                <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs">CryptoJS</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs">AES-CBC-Pkcs7</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs">IV前置拼接</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs">动态Key提取</span>
+                <span class="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-xs">Frida/HOOK</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="max-w-5xl mx-auto px-4 pb-32">
+        <!-- 写在前面 -->
+        <section id="overview" class="mb-12 scroll-mt-20">
+            <div class="glass rounded-2xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                        0
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">写在前面：逆向到底在逆什么？</h2>
+                </div>
+                <p class="text-slate-300 mb-6 leading-relaxed">
+                    很多同学一听到"逆向"就觉得高深，其实这个案例里的逆向，本质上就回答三个问题：
+                </p>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                        <div class="w-12 h-12 rounded-lg bg-info/20 flex items-center justify-center text-info text-xl mb-4">
+                            <i class="fa fa-question-circle"></i>
+                        </div>
+                        <h3 class="font-semibold text-white mb-2">问题一</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">密码在提交前被做了什么处理？</p>
+                        <div class="mt-3 text-primary font-mono text-sm font-medium">AES-CBC-Pkcs7 加密</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                        <div class="w-12 h-12 rounded-lg bg-success/20 flex items-center justify-center text-success text-xl mb-4">
+                            <i class="fa fa-key"></i>
+                        </div>
+                        <h3 class="font-semibold text-white mb-2">问题二</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">加密用的 key 从哪来？</p>
+                        <div class="mt-3 text-success font-mono text-sm font-medium">页面隐藏字段 / JS变量</div>
+                    </div>
+                    <div class="bg-slate-800/50 rounded-xl p-5 border border-slate-700/50">
+                        <div class="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center text-accent text-xl mb-4">
+                            <i class="fa fa-random"></i>
+                        </div>
+                        <h3 class="font-semibold text-white mb-2">问题三</h3>
+                        <p class="text-slate-400 text-sm leading-relaxed">加密用的 iv 从哪来？</p>
+                        <div class="mt-3 text-accent font-mono text-sm font-medium">前端随机生成，随密文传输</div>
+                    </div>
+                </div>
+                <p class="text-slate-300 mt-6 leading-relaxed">
+                    只要把这三个问题答清楚，逆向就完成了。下面我们一步步来。
+                </p>
+            </div>
+        </section>
+
+        <!-- 登录流程总览 -->
+        <section class="mb-12">
+            <div class="glass rounded-2xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold">
+                        一
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">登录流程总览（先看全局）</h2>
+                </div>
+                
+                <div class="bg-darker rounded-xl p-4 md:p-6 overflow-x-auto mb-6">
+                    <pre class="text-slate-300 text-sm font-mono leading-relaxed whitespace-pre"><code>┌──────────────────────────────────────────────────────────────────┐
+│ 1. GET  /auth/login?service=...                                  │
+│    └─ 从 HTML 提取隐藏字段 lt 和 key                              │
+│                                                                  │
+│ 2. 前端 AES 加密密码                                              │
+│    └─ 随机生成 16 字节 IV → AES-CBC-Pkcs7 → IV拼接密文 → Base64  │
+│                                                                  │
+│ 3. POST /auth/login                                              │
+│    └─ 提交 username + password(密文) + lt + execution ...         │
+│                                                                  │
+│ 4. GET  guide.medlive.cn/guide/filter                            │
+│    └─ 从返回 HTML 中正则提取 _token                               │
+└──────────────────────────────────────────────────────────────────┘</code></pre>
+                </div>
+
+                <div class="bg-primary/10 border border-primary/20 rounded-xl p-4 flex gap-3">
+                    <i class="fa fa-lightbulb-o text-primary text-xl mt-0.5"></i>
+                    <div>
+                        <h4 class="font-semibold text-primary mb-1">核心战场</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            逆向的核心战场在<strong class="text-white">第2步</strong>：搞清楚 key、iv 从哪来，以及密文最终长什么样。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第一章：抓包 -->
+        <section id="chapter1" class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-info to-primary flex items-center justify-center text-white font-bold">
+                            二
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">逆向第一步：抓包，发现密文</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <h3 class="text-lg font-semibold text-white mb-4">2.1 操作步骤</h3>
+                    <ol class="space-y-2 mb-6 text-slate-300">
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">1</span>
+                            <span>打开 Chrome，按 <code class="px-1.5 py-0.5 bg-slate-700 rounded text-info font-mono text-sm">F12</code> 打开开发者工具。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">2</span>
+                            <span>切到 <strong>Network（网络）</strong> 面板，勾选 <code class="px-1.5 py-0.5 bg-slate-700 rounded text-info font-mono text-sm">Preserve log</code>。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">3</span>
+                            <span>访问登录页面。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">4</span>
+                            <span>输入账号密码，点击登录。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">5</span>
+                            <span>在 Network 里找到 POST 登录请求。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">6</span>
+                            <span>切到 <strong>Payload / 表单数据</strong> 标签，查看提交的参数。</span>
+                        </li>
+                    </ol>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">2.2 你会看到什么</h3>
+                    <div class="code-wrapper rounded-xl overflow-hidden mb-6">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">POST 表单参数</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="text-sm font-mono leading-relaxed text-slate-300">loginType: password
+lt: LT-xxxxx-xxxxx-xxxxxxxx
+execution: e1s1
+_eventId: submit
+username: your_username
+password: NUt4TXR5emx3ekVCRFZyRGu8f3a...（一长串 Base64）
+...</code></pre>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">2.3 抛出问题</h3>
+                    <div class="bg-warning/10 border border-warning/20 rounded-xl p-4">
+                        <ul class="space-y-2 text-slate-300">
+                            <li class="flex gap-2"><i class="fa fa-question-circle text-warning mt-1"></i> <span><code class="text-warning font-mono">password</code> 显然不是明文，是一串 Base64。</span></li>
+                            <li class="flex gap-2"><i class="fa fa-question-circle text-warning mt-1"></i> <span>这串 Base64 是怎么来的？</span></li>
+                            <li class="flex gap-2"><i class="fa fa-question-circle text-warning mt-1"></i> <span>加密用的 key 和 iv 在哪？</span></li>
+                        </ul>
+                        <p class="text-warning mt-3 text-sm font-medium"><i class="fa fa-arrow-right mr-1"></i> 接下来就是逆向的过程：从现象倒推实现。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第二章：定位加密函数 -->
+        <section class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-info to-primary flex items-center justify-center text-white font-bold">
+                            三
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">逆向第二步：定位加密函数</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <h3 class="text-lg font-semibold text-white mb-4">3.1 全局搜索关键词</h3>
+                    <p class="text-slate-300 mb-4">在开发者工具 <strong>Sources（源代码）</strong> 面板中：</p>
+                    <ol class="space-y-2 mb-6 text-slate-300">
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">1</span>
+                            <span>按 <code class="px-1.5 py-0.5 bg-slate-700 rounded text-info font-mono text-sm">Ctrl + Shift + F</code> 打开全局搜索。</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-info/20 text-info flex items-center justify-center text-sm flex-shrink-0">2</span>
+                            <span>搜索关键词，按优先级尝试：
+                                <div class="flex flex-wrap gap-2 mt-2">
+                                    <code class="px-2 py-1 bg-slate-700 rounded text-success font-mono text-xs">encrypt</code>
+                                    <code class="px-2 py-1 bg-slate-700 rounded text-success font-mono text-xs">AES</code>
+                                    <code class="px-2 py-1 bg-slate-700 rounded text-success font-mono text-xs">CryptoJS</code>
+                                    <code class="px-2 py-1 bg-slate-700 rounded text-success font-mono text-xs">password</code>
+                                    <code class="px-2 py-1 bg-slate-700 rounded text-success font-mono text-xs">CryptoJS.AES.encrypt</code>
+                                </div>
+                            </span>
+                        </li>
+                    </ol>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">3.2 找到目标JS</h3>
+                    <p class="text-slate-300 mb-4">通常会在某个 <code class="px-1.5 py-0.5 bg-slate-700 rounded font-mono text-sm">login.js</code>、<code class="px-1.5 py-0.5 bg-slate-700 rounded font-mono text-sm">auth.js</code> 或内联 script 中找到类似代码：</p>
+                    
+                    <div class="code-wrapper rounded-xl overflow-hidden mb-6">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">JavaScript - 加密核心函数</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="language-javascript text-sm font-mono leading-relaxed">// 加密
+function encrypt(word) {
+    var key = CryptoJS.enc.Utf8.parse($("#key").val());
+    var ivOrg = randomString(16);
+    var iv = CryptoJS.enc.Utf8.parse(ivOrg);
+
+    var srcs = CryptoJS.enc.Utf8.parse(word);
+    var encrypted = CryptoJS.AES.encrypt(srcs, key, {
+        iv: iv,
+        mode: CryptoJS.mode.CBC,
+        padding: CryptoJS.pad.Pkcs7
+    });
+    // encrypted是已经被base64的，先解密，然后在拼接
+    var res = iv.concat(CryptoJS.enc.Base64.parse(encrypted.toString()));
+    return CryptoJS.enc.Base64.stringify(res);
+}
+
+function randomString(length, chars) {
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var result = '';
+    for (var i = length; i > 0; --i)
+        result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}</code></pre>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">3.3 从代码里读出关键信息</h3>
+                    <div class="overflow-x-auto mb-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-slate-700">
+                                    <th class="text-left py-3 px-4 text-slate-400 font-medium">代码</th>
+                                    <th class="text-left py-3 px-4 text-slate-400 font-medium">含义</th>
+                                    <th class="text-left py-3 px-4 text-slate-400 font-medium">逆向结论</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-700/50">
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">CryptoJS.enc.Utf8.parse($("#key").val())</td>
+                                    <td class="py-3 px-4 text-slate-300">key 从页面 #key 元素取值</td>
+                                    <td class="py-3 px-4 text-success font-semibold">key 在 DOM 里！</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">var ivOrg = randomString(16)</td>
+                                    <td class="py-3 px-4 text-slate-300">iv 是随机生成的</td>
+                                    <td class="py-3 px-4 text-accent font-semibold">iv 每次都不一样！</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">CryptoJS.mode.CBC</td>
+                                    <td class="py-3 px-4 text-slate-300">CBC 模式</td>
+                                    <td class="py-3 px-4 text-slate-300">模式确定</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">CryptoJS.pad.Pkcs7</td>
+                                    <td class="py-3 px-4 text-slate-300">Pkcs7 填充</td>
+                                    <td class="py-3 px-4 text-slate-300">填充确定</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">iv.concat(Base64.parse(encrypted))</td>
+                                    <td class="py-3 px-4 text-slate-300">IV 拼在密文前面</td>
+                                    <td class="py-3 px-4 text-warning font-semibold">密文 = IV ‖ ciphertext</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-mono text-xs text-info">Base64.stringify(res)</td>
+                                    <td class="py-3 px-4 text-slate-300">整体再 Base64</td>
+                                    <td class="py-3 px-4 text-slate-300">输出格式确定</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-success/10 border border-success/20 rounded-xl p-4">
+                        <p class="text-success font-medium"><i class="fa fa-check-circle mr-2"></i>至此，加密逻辑已经完全清楚了。接下来分别去拿 key 和 iv。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第三章：找Key -->
+        <section id="chapter3" class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-success to-primary flex items-center justify-center text-white font-bold">
+                            四
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">逆向第三步：找到 key —— 它在 DOM 里！</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-6 border-l-4 border-success">
+                        <code class="text-success font-mono text-sm">var key = CryptoJS.enc.Utf8.parse($("#key").val());</code>
+                    </div>
+                    <p class="text-slate-300 mb-6 leading-relaxed">
+                        <code class="px-1.5 py-0.5 bg-slate-700 rounded font-mono text-sm">$("#key")</code> 是 jQuery 选择器，意思是：<strong class="text-white">找 id 为 key 的元素，取它的 value</strong>。
+                    </p>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">4.2 在浏览器里验证</h3>
+                    <p class="text-slate-300 mb-4">回到登录页，按 F12 打开 Console（控制台），输入：</p>
+                    <div class="code-wrapper rounded-xl overflow-hidden mb-4">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">Console 验证</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="language-javascript text-sm font-mono leading-relaxed">$("#key").val()
+// 或者不用 jQuery：
+document.querySelector("#key").value</code></pre>
+                    </div>
+                    <p class="text-slate-300 mb-4">你会看到类似输出：</p>
+                    <div class="bg-darker rounded-lg p-4 mb-6 font-mono text-success text-sm">"GVJD5Ola4s3VfeTc"</div>
+
+                    <div class="bg-success/10 border border-success/20 rounded-xl p-4 mb-6 flex gap-3">
+                        <i class="fa fa-check-circle text-success text-xl mt-0.5"></i>
+                        <div>
+                            <h4 class="font-semibold text-success mb-1">Bingo！key 就在页面里。</h4>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">4.4 逆向结论：key 的获取方式</h3>
+                    <div class="bg-danger/10 border border-danger/20 rounded-xl p-4 mb-4">
+                        <p class="text-danger font-medium mb-2"><i class="fa fa-exclamation-circle mr-2"></i>重要提醒</p>
+                        <p class="text-slate-300 text-sm leading-relaxed">key 不是写死的，是服务端渲染进页面的。因此不要把它硬编码在 Python 里（服务端一换就全挂），应该跟 lt 一起，在 GET /auth/login 的响应里用 XPath 提取。</p>
+                    </div>
+
+                    <div class="code-wrapper rounded-xl overflow-hidden">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">Python - 提取lt和key</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="language-python text-sm font-mono leading-relaxed">def get_it_and_key(session):
+    url = "/auth/login"
+    params = {'service': 'https://guide.medlive.cn/cas/dir'}
+    response = session.get(url=url, params=params)
+    tree = etree.HTML(response.text)
+
+    # 提取 lt
+    lt = tree.xpath("//input[@type='hidden' and @name='lt']/@value")
+
+    # 提取 key（按实际 DOM 结构调整 XPath）
+    key = tree.xpath("//input[@type='hidden' and @id='key']/@value")
+
+    print(f"lt = {lt}, key = {key}")
+    return lt, key</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第四章：找IV -->
+        <section id="chapter4" class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-accent to-secondary flex items-center justify-center text-white font-bold">
+                            五
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">逆向第四步：找到 iv —— 它在密文里！</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <p class="text-slate-300 mb-4 leading-relaxed">
+                        <strong class="text-white">问题来了</strong>：iv 是 <code class="px-1.5 py-0.5 bg-slate-700 rounded font-mono text-sm">randomString(16)</code> 现场生成的，页面里没有，DOM 里也没有，那服务端怎么知道 iv 是多少？
+                    </p>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">5.2 看下一行代码，答案揭晓</h3>
+                    <div class="bg-slate-800/50 rounded-xl p-4 mb-6 border-l-4 border-accent font-mono text-sm">
+                        <div class="text-accent">var res = iv.concat(CryptoJS.enc.Base64.parse(encrypted.toString()));</div>
+                        <div class="text-slate-400 mt-1">return CryptoJS.enc.Base64.stringify(res);</div>
+                    </div>
+
+                    <!-- IV拼接结构示意图 -->
+                    <div class="bg-darker rounded-xl p-4 md:p-6 mb-6">
+                        <p class="text-slate-400 text-sm mb-4 text-center">最终提交的 password 字段结构：</p>
+                        <div class="flex rounded-lg overflow-hidden text-center font-mono text-sm max-w-lg mx-auto">
+                            <div class="bg-accent/20 border border-accent/40 p-4 flex-1">
+                                <div class="text-accent font-bold">16字节 IV</div>
+                                <div class="text-xs text-slate-400 mt-1">随机生成</div>
+                            </div>
+                            <div class="bg-primary/20 border border-primary/40 p-4 flex-[3]">
+                                <div class="text-primary font-bold">AES-CBC 密文</div>
+                                <div class="text-xs text-slate-400 mt-1">Pkcs7填充</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3">
+                            <span class="inline-block px-3 py-1 bg-slate-700 rounded text-slate-300 text-xs">↑ 整体 Base64 编码 ↑</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-accent/10 border border-accent/20 rounded-xl p-4 mb-6">
+                        <h4 class="font-semibold text-accent mb-2"><i class="fa fa-lightbulb-o mr-2"></i>核心结论</h4>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            这就是为什么 IV 不需要额外传给服务端——它直接拼在密文里了。服务端收到后：Base64解码 → 取前16字节作为IV → 取剩余部分作为密文 → 用key+IV解密。
+                        </p>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">5.5 Python端怎么复刻</h3>
+                    <p class="text-slate-300 mb-4">在 Python 里，<strong>IV 由我们自己随机生成</strong>，然后同样拼到密文前面：</p>
+                    <div class="code-wrapper rounded-xl overflow-hidden">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">Python - 密码加密函数</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="language-python text-sm font-mono leading-relaxed">import random
+import string
+import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+
+# 前端 randomString 的字符集
+IV_CHARS = string.digits + string.ascii_letters  # 0123456789a-zA-Z
+
+def random_iv(length=16):
+    """复刻前端的 randomString(16)"""
+    return ''.join(random.choices(IV_CHARS, k=length))
+
+def encrypt_password(password, key):
+    # 1. 生成随机 IV
+    iv_org = random_iv(16)
+    iv = iv_org.encode('utf-8')       # 字符集全是 ASCII，16字符 = 16字节
+    key_bytes = key.encode('utf-8')
+
+    # 2. AES-CBC-Pkcs7 加密
+    cipher = AES.new(key_bytes, AES.MODE_CBC, iv=iv)
+    ciphertext = cipher.encrypt(pad(password.encode('utf-8'), AES.block_size))
+
+    # 3. IV 前置拼接 + Base64
+    combined = iv + ciphertext
+    return base64.b64encode(combined).decode('utf-8')
+
+# 使用
+pwd_aes = encrypt_password("your_password", "GVJD5Ola4s3VfeTc")
+print(pwd_aes)</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第五章：验证 -->
+        <section class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-warning to-primary flex items-center justify-center text-white font-bold">
+                            六
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">逆向第五步：验证你的Python实现</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <div class="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
+                        <h4 class="font-semibold text-primary mb-2"><i class="fa fa-key mr-2"></i>关键教学点：怎么证明你的逆向是对的？</h4>
+                        <p class="text-slate-300 text-sm">使用<strong>固定IV对比法</strong>：两端使用相同的key、IV、明文，输出必须完全一致。</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa fa-chrome text-warning"></i> 前端JS（Console里跑）
+                            </h4>
+                            <div class="code-wrapper rounded-xl overflow-hidden">
+                                <div class="code-header px-3 py-2 flex items-center justify-between">
+                                    <span class="text-slate-400 text-xs">JavaScript</span>
+                                    <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs"><i class="fa fa-copy"></i></button>
+                                </div>
+                                <pre class="m-0 p-3 bg-darker overflow-x-auto scrollbar-thin"><code class="language-javascript text-xs font-mono leading-relaxed">var ivOrg = "5K4MtyzlwzEBDVrD";  // 固定IV
+var key = CryptoJS.enc.Utf8.parse("GVJD5Ola4s3VfeTc");
+var iv = CryptoJS.enc.Utf8.parse(ivOrg);
+
+var encrypted = CryptoJS.AES.encrypt(
+    CryptoJS.enc.Utf8.parse("test123456"), key,
+    {iv: iv, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7}
+);
+var res = iv.concat(CryptoJS.enc.Base64.parse(encrypted.toString()));
+console.log(CryptoJS.enc.Base64.stringify(res));</code></pre>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-semibold mb-3 flex items-center gap-2">
+                                <i class="fa fa-python text-info"></i> Python
+                            </h4>
+                            <div class="code-wrapper rounded-xl overflow-hidden">
+                                <div class="code-header px-3 py-2 flex items-center justify-between">
+                                    <span class="text-slate-400 text-xs">Python</span>
+                                    <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs"><i class="fa fa-copy"></i></button>
+                                </div>
+                                <pre class="m-0 p-3 bg-darker overflow-x-auto scrollbar-thin"><code class="language-python text-xs font-mono leading-relaxed">import base64
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+
+key = b"GVJD5Ola4s3VfeTc"
+iv = b"5K4MtyzlwzEBDVrD"   # 固定成和JS一样
+
+cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+ciphertext = cipher.encrypt(pad(b"test123456", AES.block_size))
+combined = iv + ciphertext
+print(base64.b64encode(combined).decode('utf-8'))</code></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-success/10 border border-success/20 rounded-xl p-4 mb-6 flex gap-3">
+                        <i class="fa fa-check-circle text-success text-xl mt-0.5"></i>
+                        <p class="text-slate-300">两者的输出<strong class="text-white">必须一模一样</strong>。如果不一样，按右侧顺序排查：</p>
+                    </div>
+
+                    <div class="grid sm:grid-cols-2 md:grid-cols-5 gap-3">
+                        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+                            <div class="w-8 h-8 rounded-full bg-danger/20 text-danger flex items-center justify-center mx-auto mb-2 text-sm font-bold">1</div>
+                            <div class="text-slate-300 text-xs">key是否一致</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+                            <div class="w-8 h-8 rounded-full bg-danger/20 text-danger flex items-center justify-center mx-auto mb-2 text-sm font-bold">2</div>
+                            <div class="text-slate-300 text-xs">IV是否一致</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+                            <div class="w-8 h-8 rounded-full bg-danger/20 text-danger flex items-center justify-center mx-auto mb-2 text-sm font-bold">3</div>
+                            <div class="text-slate-300 text-xs">模式是否CBC</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+                            <div class="w-8 h-8 rounded-full bg-danger/20 text-danger flex items-center justify-center mx-auto mb-2 text-sm font-bold">4</div>
+                            <div class="text-slate-300 text-xs">padding是否Pkcs7</div>
+                        </div>
+                        <div class="bg-slate-800/50 rounded-lg p-3 text-center">
+                            <div class="w-8 h-8 rounded-full bg-danger/20 text-danger flex items-center justify-center mx-auto mb-2 text-sm font-bold">5</div>
+                            <div class="text-slate-300 text-xs">IV前置拼接</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 第六章：完整代码 -->
+        <section id="chapter6" class="mb-8 scroll-mt-20 chapter">
+            <div class="glass rounded-2xl overflow-hidden">
+                <button onclick="toggleChapter(this)" class="chapter-toggle w-full p-6 md:p-8 flex items-center justify-between text-left hover:bg-slate-800/30 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-secondary to-accent flex items-center justify-center text-white font-bold">
+                            七
+                        </div>
+                        <h2 class="text-xl md:text-2xl font-bold text-white">完整代码 & 两个隐患修复</h2>
+                    </div>
+                    <i class="fa fa-chevron-right text-slate-400 chapter-arrow transition-transform duration-300"></i>
+                </button>
+                <div class="chapter-content px-6 md:px-8 pb-8">
+                    <!-- 隐患 -->
+                    <div class="grid md:grid-cols-2 gap-4 mb-6">
+                        <div class="bg-danger/5 border border-danger/30 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fa fa-exclamation-triangle text-danger"></i>
+                                <h4 class="font-semibold text-danger">隐患1：IV被固定，未随机</h4>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-3 leading-relaxed">原代码配置中写死IV，与真实浏览器行为不一致，容易被风控识别。</p>
+                            <div class="bg-darker rounded p-2 font-mono text-xs text-danger line-through mb-2">iv: "5K4MtyzlwzEBDVrD"</div>
+                            <div class="bg-success/10 rounded p-2 font-mono text-xs text-success">iv = random_iv(16).encode('utf-8')</div>
+                        </div>
+                        <div class="bg-danger/5 border border-danger/30 rounded-xl p-5">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fa fa-exclamation-triangle text-danger"></i>
+                                <h4 class="font-semibold text-danger">隐患2：Key硬编码</h4>
+                            </div>
+                            <p class="text-slate-400 text-sm mb-3 leading-relaxed">key是服务端渲染的，硬编码一旦服务端轮换就全挂。必须动态从页面提取。</p>
+                            <div class="bg-darker rounded p-2 font-mono text-xs text-danger line-through mb-2">key = "GVJD5Ola4s3VfeTc"  #硬编码</div>
+                            <div class="bg-success/10 rounded p-2 font-mono text-xs text-success">key = tree.xpath(".../@value")</div>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-white mb-4">完整调用示例（修正版）</h3>
+                    <div class="code-wrapper rounded-xl overflow-hidden">
+                        <div class="code-header px-4 py-2.5 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="text-slate-400 text-xs ml-2">Python - 完整登录流程</span>
+                            </div>
+                            <button onclick="copyCode(this)" class="text-slate-400 hover:text-white text-xs flex items-center gap-1">
+                                <i class="fa fa-copy"></i> 复制
+                            </button>
+                        </div>
+                        <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin max-h-[600px]"><code class="language-python text-sm font-mono leading-relaxed">import random
+import string
+import requests
+from lxml import etree
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+import base64
+
+IV_CHARS = string.digits + string.ascii_letters
+
+def random_iv(length=16):
+    return ''.join(random.choices(IV_CHARS, k=length))
+
+class AESManager:
+    def __init__(self, key: bytes, iv: bytes):
+        self.iv = iv
+        self.cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+
+    def encrypt(self, plaintext: str) -> str:
+        srcs = plaintext.encode('utf-8')
+        encrypted = self.cipher.encrypt(pad(srcs, AES.block_size))
+        combined = self.iv + encrypted          # IV前置拼接
+        result = base64.b64encode(combined).decode('utf-8')
+        return result
+
+def get_it_and_key(session):
+    url = "/auth/login"
+    params = {'service': 'https://guide.medlive.cn/cas/dir'}
+    response = session.get(url=url, params=params)
+    tree = etree.HTML(response.text)
+
+    lt = tree.xpath("//input[@type='hidden' and @name='lt']/@value")
+    key = tree.xpath("//input[@type='hidden' and @id='key']/@value")
+    return lt[0] if lt else None, key[0] if key else None
+
+def login(session, lt, username, pwd_aes):
+    # 提交登录表单逻辑
+    # ...
+    return True
+
+def get_token(session):
+    # 获取_token逻辑
+    # ...
+    return "xxx"
+
+def run(username, password):
+    session = requests.Session()
+
+    # 1. 从页面拿 lt 和 key（动态获取，不硬编码）
+    lt, key = get_it_and_key(session)
+
+    # 2. 随机 IV + AES 加密（每次IV不同，更接近真实浏览器）
+    iv = random_iv(16).encode('utf-8')
+    aes_cry = AESManager(key.encode('utf-8'), iv)
+    pwd_aes = aes_cry.encrypt(password)
+
+    # 3. 登录
+    if not login(session, lt, username, pwd_aes):
+        return None, None
+
+    # 4. 获取 _token
+    token = get_token(session)
+    return session, token
+
+if __name__ == "__main__":
+    session, token = run("your_username", "your_password")
+    print("登录成功, token:", token)</code></pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 总结 -->
+        <section id="summary" class="mb-12 scroll-mt-20">
+            <div class="glass rounded-2xl p-6 md:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-success to-primary flex items-center justify-center text-white font-bold">
+                        <i class="fa fa-flag-checkered"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">逆向要点总结</h2>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mb-8">
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary font-bold flex-shrink-0 pulse-ring">1</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">逆向不是猜，是从现象倒推实现</h4>
+                            <p class="text-slate-400 text-sm">先抓包看到密文，再搜encrypt找到加密函数。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-success/20 border-2 border-success flex items-center justify-center text-success font-bold flex-shrink-0">2</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">key 在 DOM 里</h4>
+                            <p class="text-slate-400 text-sm">前端代码$("#key").val()直接暴露了key的位置。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-accent/20 border-2 border-accent flex items-center justify-center text-accent font-bold flex-shrink-0">3</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">iv 在密文里</h4>
+                            <p class="text-slate-400 text-sm">前端随机生成IV后拼接到密文前，整体Base64。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-warning/20 border-2 border-warning flex items-center justify-center text-warning font-bold flex-shrink-0">4</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">AES 四要素</h4>
+                            <p class="text-slate-400 text-sm">key（页面动态）、IV（随机16字节）、mode=CBC、padding=Pkcs7。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-danger/20 border-2 border-danger flex items-center justify-center text-danger font-bold flex-shrink-0">5</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">输出格式是最大坑点</h4>
+                            <p class="text-slate-400 text-sm">不是Base64(ciphertext)，而是Base64(IV_bytes ‖ ciphertext_bytes)。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-info/20 border-2 border-info flex items-center justify-center text-info font-bold flex-shrink-0">6</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">验证方法</h4>
+                            <p class="text-slate-400 text-sm">固定IV，前端JS和Python各跑一遍，输出必须相同。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4 pb-6">
+                        <div class="w-12 h-12 rounded-full bg-secondary/20 border-2 border-secondary flex items-center justify-center text-secondary font-bold flex-shrink-0">7</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">落地要点</h4>
+                            <p class="text-slate-400 text-sm">key动态获取、IV每次随机，才能长期稳定不被风控。</p>
+                        </div>
+                    </div>
+                    <div class="flow-line flex gap-4">
+                        <div class="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary flex items-center justify-center text-primary font-bold flex-shrink-0">8</div>
+                        <div>
+                            <h4 class="font-semibold text-white mb-1">Session一致性</h4>
+                            <p class="text-slate-400 text-sm">获取lt、提交登录、获取_token必须同一session。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 逆向流程图 -->
+                <div class="bg-darker rounded-xl p-6 overflow-x-auto">
+                    <h4 class="text-white font-semibold mb-4 text-center"><i class="fa fa-sitemap mr-2"></i>逆向流程图</h4>
+                    <div class="flex flex-col items-center gap-0 min-w-[280px]">
+                        <div class="bg-primary/20 border border-primary/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-primary font-medium text-sm">抓包看到密文 password</div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <i class="fa fa-arrow-down text-slate-500"></i>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="bg-info/20 border border-info/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-info font-medium text-sm">搜索 encrypt / AES / CryptoJS</div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <i class="fa fa-arrow-down text-slate-500"></i>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="bg-success/20 border border-success/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-success font-medium text-sm">找到加密函数 encrypt(word)</div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-3 relative">
+                            <div class="hidden md:block absolute top-[-12px] left-[16.6%] w-[66%] h-0.5 bg-slate-600"></div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full bg-success flex items-center justify-center text-white text-xs mb-2">key</div>
+                                <div class="bg-success/10 border border-success/30 rounded p-2 text-center w-full">
+                                    <div class="text-slate-300 text-xs">key = $("#key").val()<br>→ F12验证<br>→ key在DOM里</div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-white text-xs mb-2">iv</div>
+                                <div class="bg-accent/10 border border-accent/30 rounded p-2 text-center w-full">
+                                    <div class="text-slate-300 text-xs">iv = randomString(16)<br>→ 前端随机生成</div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center">
+                                <div class="w-8 h-8 rounded-full bg-warning flex items-center justify-center text-white text-xs mb-2">拼接</div>
+                                <div class="bg-warning/10 border border-warning/30 rounded p-2 text-center w-full">
+                                    <div class="text-slate-300 text-xs">res = iv.concat(ciphertext)<br>→ Base64输出</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600 mt-6"></div>
+                        <i class="fa fa-arrow-down text-slate-500"></i>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="bg-accent/20 border border-accent/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-accent font-medium text-sm">密文 = Base64(IV ‖ ciphertext)</div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <i class="fa fa-arrow-down text-slate-500"></i>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="bg-secondary/20 border border-secondary/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-secondary font-medium text-sm">Python复刻：随机IV + AES-CBC + IV前置 + Base64</div>
+                        </div>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <i class="fa fa-arrow-down text-slate-500"></i>
+                        <div class="w-0.5 h-6 bg-slate-600"></div>
+                        <div class="bg-gradient-to-r from-success/20 to-primary/20 border border-success/40 rounded-lg px-6 py-3 text-center">
+                            <div class="text-white font-medium text-sm">固定IV对比JS与Python输出，断言相等 ✅</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 法律声明 -->
+        <section class="mb-12">
+            <div class="bg-danger/5 border border-danger/20 rounded-2xl p-6 flex gap-4">
+                <i class="fa fa-gavel text-danger text-2xl flex-shrink-0 mt-1"></i>
+                <div>
+                    <h3 class="font-semibold text-danger mb-2">法律声明</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        本文档仅用于<strong class="text-slate-300">网络安全技术学习与交流</strong>，目的是帮助开发者理解前端加密原理、提升爬虫与逆向分析能力。
+                        请勿将所学技术用于非法用途，未经授权抓取他人网站数据可能违反《网络安全法》及相关法律法规。
+                        使用本文档内容产生的任何法律责任由使用者自行承担。
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="border-t border-slate-800 py-8 px-4 pb-24 md:pb-8">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="flex items-center justify-center gap-2 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <i class="fa fa-code text-white text-sm"></i>
+                </div>
+                <span class="text-xl font-bold text-gradient">HaleShi</span>
+            </div>
+            <p class="text-slate-500 text-sm mb-2">逆向实战教学 | AES登录加密分析</p>
+            <p class="text-slate-600 text-xs">© 2026 HaleShi. All rights reserved. 仅供学习交流使用</p>
+        </div>
+    </footer>
+
+    <!-- 移动端底部导航 -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-700/50 z-50 pb-[env(safe-area-inset-bottom)]">
+        <div class="grid grid-cols-5 h-16">
+            <a href="#overview" class="bottom-nav-item flex flex-col items-center justify-center gap-1 text-primary">
+                <i class="fa fa-home text-lg"></i>
+                <span class="text-[10px]">总览</span>
+            </a>
+            <a href="#chapter1" class="bottom-nav-item flex flex-col items-center justify-center gap-1 text-slate-400">
+                <i class="fa fa-search text-lg"></i>
+                <span class="text-[10px]">抓包</span>
+            </a>
+            <a href="#chapter3" class="bottom-nav-item flex flex-col items-center justify-center gap-1 text-slate-400">
+                <i class="fa fa-key text-lg"></i>
+                <span class="text-[10px]">找Key</span>
+            </a>
+            <a href="#chapter4" class="bottom-nav-item flex flex-col items-center justify-center gap-1 text-slate-400">
+                <i class="fa fa-random text-lg"></i>
+                <span class="text-[10px]">找IV</span>
+            </a>
+            <a href="#chapter6" class="bottom-nav-item flex flex-col items-center justify-center gap-1 text-slate-400">
+                <i class="fa fa-code text-lg"></i>
+                <span class="text-[10px]">代码</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" class="fixed bottom-20 md:bottom-8 right-4 w-12 h-12 rounded-full bg-primary shadow-lg shadow-primary/30 text-white flex items-center justify-center opacity-0 translate-y-4 transition-all duration-300 pointer-events-none z-40">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <script>
+        // 代码高亮
+        document.addEventListener('DOMContentLoaded', () => {
+            hljs.highlightAll();
+            
+            // 默认展开第一章
+            const firstChapter = document.querySelector('.chapter');
+            if (firstChapter) {
+                firstChapter.classList.add('chapter-open');
+            }
+
+            // 滚动监听：回到顶部按钮、导航高亮
+            const backToTop = document.getElementById('backToTop');
+            const navItems = document.querySelectorAll('.bottom-nav-item');
+            const sections = ['overview', 'chapter1', 'chapter3', 'chapter4', 'chapter6'];
+            
+            window.addEventListener('scroll', () => {
+                // 回到顶部
+                if (window.scrollY > 400) {
+                    backToTop.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+                } else {
+                    backToTop.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+                }
+
+                // 移动端导航高亮
+                let current = '';
+                sections.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el && el.getBoundingClientRect().top <= 100) {
+                        current = id;
+                    }
+                });
+                navItems.forEach(item => {
+                    const href = item.getAttribute('href').substring(1);
+                    if (href === current) {
+                        item.classList.remove('text-slate-400');
+                        item.classList.add('text-primary');
+                    } else {
+                        item.classList.add('text-slate-400');
+                        item.classList.remove('text-primary');
+                    }
+                });
+            });
+
+            // 平滑滚动偏移
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        const offset = 80;
+                        const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+                        window.scrollTo({top, behavior: 'smooth'});
+                        
+                        // 自动展开目标章节
+                        const chapter = target.closest('.chapter');
+                        if (chapter && !chapter.classList.contains('chapter-open')) {
+                            chapter.classList.add('chapter-open');
+                        }
+                    }
+                });
+            });
+        });
+
+        // 章节折叠
+        function toggleChapter(btn) {
+            const chapter = btn.closest('.chapter');
+            chapter.classList.toggle('chapter-open');
+        }
+
+        // 复制代码
+        function copyCode(btn) {
+            const wrapper = btn.closest('.code-wrapper');
+            const code = wrapper.querySelector('code').textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(code).then(() => showCopied(btn));
+            } else {
+                const textarea = document.createElement('textarea');
+                textarea.value = code;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showCopied(btn);
+            }
+        }
+
+        function showCopied(btn) {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fa fa-check"></i> 已复制';
+            btn.classList.add('text-success');
+            setTimeout(() => {
+                btn.innerHTML = original;
+                btn.classList.remove('text-success');
+            }, 2000);
+        }
+    </script>
+</body>
+</html><!--23490946152395614730091819--><!--23608471522573747210091819-->
