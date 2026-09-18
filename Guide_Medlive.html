@@ -568,7 +568,7 @@ document.querySelector("#key").value</code></pre>
                         </div>
                         <pre class="m-0 p-4 bg-darker overflow-x-auto scrollbar-thin"><code class="language-python text-sm font-mono leading-relaxed">def get_it_and_key(session):
     url = "/auth/login"
-    params = {'service': 'https://guide.medlive.cn/cas/dir'}
+    params = {'service': 'YUhSMGNITTZMeTluZFdsa1pTNXRaV1JzYVhabExtTnU=/cas/dir'}
     response = session.get(url=url, params=params)
     tree = etree.HTML(response.text)
 
@@ -852,7 +852,7 @@ class AESManager:
 
 def get_it_and_key(session):
     url = "/auth/login"
-    params = {'service': 'https://guide.medlive.cn/cas/dir'}
+    params = {'service': 'YUhSMGNITTZMeTluZFdsa1pTNXRaV1JzYVhabExtTnU=/cas/dir'}
     response = session.get(url=url, params=params)
     tree = etree.HTML(response.text)
 
