@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>医脉通药品说明书密文解密实战 | HaleShi 教学案例</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0891b2',
+                        secondary: '#0d9488',
+                        accent: '#f59e0b',
+                        dark: '#0f172a',
+                        card: '#1e293b',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Consolas', 'Monaco', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'spin-slow': 'spin 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .bg-grid {
+                background-image: 
+                    linear-gradient(rgba(8, 145, 178, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(8, 145, 178, 0.05) 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .glass {
+                background: rgba(30, 41, 59, 0.7);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 80px;
+        }
+        .code-block {
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .code-header {
+            background: #2d333b;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #adbac7;
+        }
+        .code-dots span {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        pre code.hljs {
+            padding: 16px 20px !important;
+            font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+            font-size: 13px;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+        .reading-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #0891b2, #0d9488, #f59e0b);
+            z-index: 100;
+            transition: width 0.1s ease;
+        }
+        .step-number {
+            background: linear-gradient(135deg, #0891b2, #0d9488);
+            box-shadow: 0 4px 15px rgba(8, 145, 178, 0.4);
+        }
+        .author-avatar {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #0891b2, #0d9488, #f59e0b);
+            z-index: 1;
+        }
+        .author-avatar::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #0891b2, #0d9488, #f59e0b, #0891b2);
+            z-index: -1;
+            animation: spin-slow 8s linear infinite;
+        }
+        .author-verify {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+        .nav-link.active {
+            color: #0891b2;
+            font-weight: 600;
+        }
+        .mobile-nav-link.active {
+            color: white;
+            background: linear-gradient(135deg, #0891b2, #0d9488);
+        }
+        @media (max-width: 768px) {
+            pre code.hljs {
+                font-size: 11.5px !important;
+                padding: 12px !important;
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-gray-100 font-sans antialiased">
+    <!-- 阅读进度条 -->
+    <div class="reading-progress" id="readingProgress"></div>
+
+    <!-- 顶部导航 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-gray-700/50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa fa-flask text-primary text-xl"></i>
+                <span class="font-bold text-lg">逆向实战教程</span>
+                <span class="text-xs text-gray-400 hidden sm:inline ml-1">by HaleShi</span>
+            </div>
+            <div class="hidden md:flex items-center gap-6 text-sm">
+                <a href="#overview" class="nav-link hover:text-primary transition-colors">概览</a>
+                <a href="#step1" class="nav-link hover:text-primary transition-colors">定位代码</a>
+                <a href="#step2" class="nav-link hover:text-primary transition-colors">核心分析</a>
+                <a href="#step3" class="nav-link hover:text-primary transition-colors">逻辑还原</a>
+                <a href="#code" class="nav-link hover:text-primary transition-colors">完整代码</a>
+            </div>
+            <button id="backToTop" class="hidden md:flex w-9 h-9 rounded-full bg-primary/20 text-primary items-center justify-center hover:bg-primary/30 transition-colors">
+                <i class="fa fa-arrow-up"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <header class="relative min-h-[90vh] flex items-center pt-20 pb-16 overflow-hidden">
+        <!-- 背景装饰 -->
+        <div class="absolute inset-0 bg-grid opacity-40"></div>
+        <div class="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 -right-32 w-96 h-96 bg-secondary/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-accent/10 rounded-full blur-3xl"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+            <div class="text-center mb-10">
+                <!-- 标签 -->
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm mb-6">
+                    <i class="fa fa-medkit"></i>
+                    <span>用药参考 APK v529 版本 · AES 解密实战</span>
+                </div>
+                
+                <!-- 标题 -->
+                <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
+                    <span class="bg-gradient-to-r from-primary via-secondary to-accent text-gradient">医脉通药品说明书</span>
+                    <br>密文解密全流程实战
+                </h1>
+                
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+                    从抓包密文到算法还原，手把手带你定位AES密钥与IV，4步完成Java到Python的解密复现
+                </p>
+
+                <!-- 作者署名（全新光环设计） -->
+                <div class="inline-flex items-center gap-4 px-5 py-3 rounded-full bg-card/60 border border-gray-700/50 shadow-xl mb-10 hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300">
+                    <div class="author-avatar text-sm">
+                        HS
+                        <div class="author-verify">
+                            <i class="fa fa-check"></i>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <div class="flex items-center gap-2 mb-0.5">
+                            <span class="text-xs uppercase tracking-wider text-gray-400">原创作者</span>
+                            <span class="px-2 py-0.5 text-[10px] rounded bg-primary/20 text-primary">教学案例</span>
+                        </div>
+                        <div class="font-semibold bg-gradient-to-r from-primary to-accent text-gradient">HaleShi</div>
+                    </div>
+                    <div class="h-10 w-px bg-gray-700 hidden sm:block"></div>
+                    <div class="hidden sm:block text-left">
+                        <div class="text-xs text-gray-400 mb-0.5">实战成果</div>
+                        <div class="text-sm font-medium">100% 解密复现</div>
+                    </div>
+                </div>
+
+                <!-- KPI 卡片 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+                    <div class="glass rounded-xl p-4 border border-gray-700/50 hover:border-primary/50 transition-colors">
+                        <div class="text-3xl font-bold text-primary mb-1" id="stepCount">0</div>
+                        <div class="text-sm text-gray-400">核心步骤</div>
+                    </div>
+                    <div class="glass rounded-xl p-4 border border-gray-700/50 hover:border-secondary/50 transition-colors">
+                        <div class="text-3xl font-bold text-secondary mb-1" id="keyLength">0</div>
+                        <div class="text-sm text-gray-400">位密钥长度</div>
+                    </div>
+                    <div class="glass rounded-xl p-4 border border-gray-700/50 hover:border-accent/50 transition-colors">
+                        <div class="text-3xl font-bold text-accent mb-1">CBC</div>
+                        <div class="text-sm text-gray-400">加密模式</div>
+                    </div>
+                    <div class="glass rounded-xl p-4 border border-gray-700/50 hover:border-green-500/50 transition-colors">
+                        <div class="text-3xl font-bold text-green-400 mb-1">100%</div>
+                        <div class="text-sm text-gray-400">解密成功率</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快捷按钮 -->
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="#step1" class="px-6 py-3 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-medium flex items-center gap-2 hover:shadow-lg hover:shadow-primary/30 transition-all hover:-translate-y-0.5">
+                    <i class="fa fa-rocket"></i>
+                    开始实战
+                </a>
+                <a href="#code" class="px-6 py-3 rounded-lg bg-card/80 border border-gray-700 text-white font-medium flex items-center gap-2 hover:bg-card hover:border-gray-600 transition-all">
+                    <i class="fa fa-code"></i>
+                    查看完整代码
+                </a>
+            </div>
+        </div>
+
+        <!-- 滚动提示 -->
+        <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-gray-500">
+            <i class="fa fa-chevron-down"></i>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 pb-24">
+        <!-- 项目概览 -->
+        <section id="overview" class="mb-16">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-1 h-6 bg-gradient-to-b from-primary to-secondary rounded-full"></span>
+                项目背景：密文现象
+            </h2>
+            
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 mb-8">
+                <p class="text-gray-300 leading-relaxed mb-6">
+                    在对医脉通「用药参考」APK（v529版本）进行抓包分析时，药品分类接口返回的是Base64编码的AES加密密文，无法直接获取结构化的药品数据。本案例将完整演示如何通过逆向分析定位解密逻辑、提取密钥与IV、最终用Python还原解密算法。
+                </p>
+
+                <div class="bg-dark/50 rounded-xl p-4 border border-gray-700/30">
+                    <div class="flex items-center gap-2 text-xs text-gray-400 mb-2">
+                        <i class="fa fa-lock text-accent"></i>
+                        <span>接口返回密文示例（Base64编码）</span>
+                    </div>
+                    <div class="font-mono text-xs text-gray-300 break-all leading-relaxed max-h-40 overflow-y-auto p-2 bg-dark/80 rounded-lg">
+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
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex gap-3">
+                    <i class="fa fa-lightbulb-o text-yellow-400 text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <div class="font-medium text-yellow-400 mb-1">逆向思路</div>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            APP既然能正常显示明文数据，内部必然有解密逻辑。我们只需要通过jadx反编译APK，沿着返回数据的处理链路追踪，就能找到解密方法和硬编码的密钥。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤1：定位代码块 -->
+        <section id="step1" class="mb-16 scroll-mt-20">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="step-number w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 mt-0.5">1</div>
+                <div>
+                    <h2 class="text-2xl font-bold">反编译定位解密代码块</h2>
+                    <p class="text-gray-400 mt-1">使用jadx反编译APK，追踪接口响应处理链路</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 ml-0 md:ml-14">
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    首先使用 <code class="px-1.5 py-0.5 rounded bg-dark/60 text-primary text-sm">jadx-gui</code> 打开用药参考APK文件，通过搜索接口URL特征或方法名，定位到药品分类列表请求的处理方法 <code class="px-1.5 py-0.5 rounded bg-dark/60 text-secondary text-sm">getListDrugCateLastPreparation</code>：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots">
+                            <span style="background: #ff5f56;"></span>
+                            <span style="background: #ffbd2e;"></span>
+                            <span style="background: #27c93f;"></span>
+                        </div>
+                        <span>Java · 接口处理方法</span>
+                        <button class="copy-btn text-gray-400 hover:text-white transition-colors" onclick="copyCode(this)">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre><code class="language-java">public static JSONObject getListDrugCateLastPreparation(String str, int i10, int i11) throws JSONException {
+    String str2;
+    try {
+        HashMap hashMap = new HashMap();
+        hashMap.put("from", Const.DRUG_APP_NAME);
+        hashMap.put(c.f14979m, 1);
+        hashMap.put("clientVersion", b.m(DrugrefApplication.f20369n));
+        hashMap.put("page", Integer.valueOf(i10));
+        hashMap.put("num", Integer.valueOf(i11));
+        hashMap.put("treeCode", str);
+        if (str.contains("Z")) {
+            str2 = IConfig.URL_DRUG_CATE_LIST_LAST_PREPARATION;
+        } else {
+            str2 = IConfig.URL_DRUG_CATE_LIST_LAST_PARENT_DRUG;
+        }
+        return new JSONObject(x1.b.a(q.p(str2, hashMap, MedliveBaseApi.getYmtinfoUserid()), "bnpxN3EwRmg0N09kcFhzRQ")).optJSONObject("data");
+    } catch (Exception e) {
+        // ... 异常处理
+    }
+}</code></pre>
+                </div>
+
+                <div class="p-4 rounded-lg bg-blue-500/10 border border-blue-500/20 flex gap-3 mt-4">
+                    <i class="fa fa-search text-blue-400 text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <div class="font-medium text-blue-400 mb-1">关键发现</div>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            方法最后一行出现了字符串字面量 <code class="px-1 rounded bg-dark/60 text-accent">"bnpxN3EwRmg0N09kcFhzRQ"</code>，长度正好22位，高度可疑，大概率就是AES密钥。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤2：核心调用分析 -->
+        <section id="step2" class="mb-16 scroll-mt-20">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="step-number w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 mt-0.5">2</div>
+                <div>
+                    <h2 class="text-2xl font-bold">核心调用逻辑分析</h2>
+                    <p class="text-gray-400 mt-1">抽丝剥茧，定位两层嵌套的核心调用</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 ml-0 md:ml-14">
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    将最后一行关键代码提取出来，这就是整个解密流程的核心：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots">
+                            <span style="background: #ff5f56;"></span>
+                            <span style="background: #ffbd2e;"></span>
+                            <span style="background: #27c93f;"></span>
+                        </div>
+                        <span>Java · 核心调用（最关键）</span>
+                        <button class="copy-btn text-gray-400 hover:text-white transition-colors" onclick="copyCode(this)">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre><code class="language-java">x1.b.a(
+    q.p(str2, hashMap, MedliveBaseApi.getYmtinfoUserid()),
+    "bnpxN3EwRmg0N09kcFhzRQ"
+)</code></pre>
+                </div>
+
+                <p class="text-gray-300 leading-relaxed mb-6">
+                    这是典型的两层嵌套调用结构，先发起网络请求，再对返回结果做解密处理：
+                </p>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-700">
+                                <th class="text-left py-3 px-4 text-gray-300 font-medium">层级</th>
+                                <th class="text-left py-3 px-4 text-gray-300 font-medium">方法</th>
+                                <th class="text-left py-3 px-4 text-gray-300 font-medium">作用</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-800 hover:bg-primary/5 transition-colors">
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 rounded bg-blue-500/20 text-blue-400 text-xs font-medium">内层</span>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-sm text-secondary">q.p(url, params, userId)</td>
+                                <td class="py-3 px-4 text-gray-300">发起HTTP请求，服务器返回 <span class="text-accent font-medium">AES加密的密文数据</span></td>
+                            </tr>
+                            <tr class="hover:bg-primary/5 transition-colors">
+                                <td class="py-3 px-4">
+                                    <span class="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-medium">外层</span>
+                                </td>
+                                <td class="py-3 px-4 font-mono text-sm text-secondary">x1.b.a(加密数据, 密钥)</td>
+                                <td class="py-3 px-4 text-gray-300">AES解密，使用密钥 <code class="px-1 rounded bg-dark/60 text-accent">"bnpxN3EwRmg0N09kcFhzRQ"</code> 解密响应</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤3：解密算法还原 -->
+        <section id="step3" class="mb-16 scroll-mt-20">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="step-number w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 mt-0.5">3</div>
+                <div>
+                    <h2 class="text-2xl font-bold">深入解密方法，还原算法细节</h2>
+                    <p class="text-gray-400 mt-1">进入x1.b.a方法内部，提取加密模式、密钥处理逻辑、IV向量</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 ml-0 md:ml-14">
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    继续跟进到 <code class="px-1.5 py-0.5 rounded bg-dark/60 text-secondary text-sm">x1.b.a</code> 方法内部，就能看到完整的AES解密实现：
+                </p>
+
+                <div class="code-block">
+                    <div class="code-header">
+                        <div class="code-dots">
+                            <span style="background: #ff5f56;"></span>
+                            <span style="background: #ffbd2e;"></span>
+                            <span style="background: #27c93f;"></span>
+                        </div>
+                        <span>Java · AES解密核心实现</span>
+                        <button class="copy-btn text-gray-400 hover:text-white transition-colors" onclick="copyCode(this)">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre><code class="language-java">public static String a(String str, String str2) throws Exception {
+    byte[] bArr;
+    if (str2 == null || str2.length() != 22) {
+        throw new Exception("秘钥长度必须为22个字符。");
+    }
+    // 密钥补"=="后Base64解码
+    byte[] z10 = d.z((str2 + "==").getBytes("UTF-8"));
+    Cipher instance = Cipher.getInstance(f49233c);
+    // 重点：IV直接使用密钥的前16字节！
+    instance.init(2, new SecretKeySpec(z10, "AES"), new IvParameterSpec(z10, 0, 16));
+    if (str != null) {
+        bArr = d.z(str.getBytes(f49231a));
+    } else {
+        bArr = null;
+    }
+    return new String(instance.doFinal(bArr), f49231a);
+}</code></pre>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4 mt-6">
+                    <div class="p-4 rounded-lg bg-primary/10 border border-primary/20">
+                        <div class="font-medium text-primary mb-2 flex items-center gap-2">
+                            <i class="fa fa-key"></i>
+                            密钥处理逻辑
+                        </div>
+                        <ul class="text-sm text-gray-300 space-y-1.5 leading-relaxed">
+                            <li>• 原始密钥字符串长度必须为22位</li>
+                            <li>• 末尾补两个 <code class="px-1 rounded bg-dark/60">"=="</code> 凑齐Base64填充</li>
+                            <li>• Base64解码后得到 <span class="text-accent font-medium">16字节</span> 原始密钥</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 rounded-lg bg-secondary/10 border border-secondary/20">
+                        <div class="font-medium text-secondary mb-2 flex items-center gap-2">
+                            <i class="fa fa-random"></i>
+                            IV向量规律
+                        </div>
+                        <ul class="text-sm text-gray-300 space-y-1.5 leading-relaxed">
+                            <li>• IV不需要额外寻找！</li>
+                            <li>• <span class="text-accent font-medium">直接使用解码后密钥的前16字节</span></li>
+                            <li>• 加密模式为 AES/CBC/PKCS5Padding</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-lg bg-accent/10 border border-accent/20 flex gap-3 mt-6">
+                    <i class="fa fa-exclamation-triangle text-accent text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <div class="font-medium text-accent mb-1">常见踩坑点</div>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            很多人看到密钥只有22位会疑惑，以为密钥错误。实际上22字符Base64解码后正好是16字节（<code class="px-1 rounded bg-dark/60">ceil(16*4/3)=22</code>），补"=="是因为Base64解码要求输入长度是4的倍数。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 步骤4：Python算法还原 -->
+        <section id="step4" class="mb-16 scroll-mt-20">
+            <div class="flex items-start gap-4 mb-6">
+                <div class="step-number w-10 h-10 rounded-full flex items-center justify-center font-bold text-white flex-shrink-0 mt-0.5">4</div>
+                <div>
+                    <h2 class="text-2xl font-bold">Java → Python 算法复现</h2>
+                    <p class="text-gray-400 mt-1">使用pycryptodome库实现等价的解密逻辑</p>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 ml-0 md:ml-14">
+                <p class="text-gray-300 leading-relaxed mb-4">
+                    根据分析出的逻辑，可以轻松用Python实现等价的解密函数。核心逻辑和Java代码一一对应：
+                </p>
+
+                <div class="code-block" id="code">
+                    <div class="code-header">
+                        <div class="code-dots">
+                            <span style="background: #ff5f56;"></span>
+                            <span style="background: #ffbd2e;"></span>
+                            <span style="background: #27c93f;"></span>
+                        </div>
+                        <span>Python · 完整解密实现</span>
+                        <button class="copy-btn text-gray-400 hover:text-white transition-colors" onclick="copyCode(this)">
+                            <i class="fa fa-copy"></i>
+                        </button>
+                    </div>
+                    <pre><code class="language-python">"""
+医脉通用药参考 APP 接口响应解密
+还原 getListDrugCateLastPreparation Java 逻辑
+"""
+import base64
+import json
+import requests
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+
+# AES 密钥：Java中 "bnpxN3EwRmg0N09kcFhzRQ" + "==" 后 Base64 解码
+_KEY = base64.b64decode("bnpxN3EwRmg0N09kcFhzRQ==")  # 16 bytes
+_IV = _KEY[:16]  # IV取密钥前16字节
+
+def aes_decrypt(ciphertext: str) -> dict | None:
+    """AES/CBC 解密，对应 Java 的 x1.b.a(str, 'bnpxN3EwRmg0N09kcFhzRQ')"""
+    try:
+        raw = base64.b64decode(ciphertext)
+        cipher = AES.new(_KEY, AES.MODE_CBC, _IV)
+        plain = unpad(cipher.decrypt(raw), AES.block_size)
+        return json.loads(plain.decode("utf-8"))
+    except Exception as e:
+        print(f"解密失败: {e}")
+        return None
+
+
+if __name__ == "__main__":
+    # 替换为抓包得到的密文
+    ciphertext = 'uAMdR6P5VEOav63MMbDM2ckVV5+q4NdgVZP8O8Tqt+68fNrEGHRfXduXapw8+lne...'
+    result = aes_decrypt(ciphertext)
+    print(json.dumps(result, ensure_ascii=False, indent=2))</code></pre>
+                </div>
+
+                <div class="p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex gap-3 mt-4">
+                    <i class="fa fa-check-circle text-green-400 text-xl mt-0.5 flex-shrink-0"></i>
+                    <div>
+                        <div class="font-medium text-green-400 mb-1">测试验证</div>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            将抓包得到的密文传入函数，运行后即可得到结构化的JSON药品分类数据，解密成功率100%。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-5 rounded-xl bg-dark/50 border border-gray-700/30">
+                    <div class="font-medium mb-3 flex items-center gap-2">
+                        <i class="fa fa-magic text-accent"></i>
+                        <span>算法对应关系对照表</span>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-3 text-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 w-24">密钥处理</span>
+                            <i class="fa fa-long-arrow-right text-gray-600"></i>
+                            <code class="text-secondary">base64.b64decode(key+"==")</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 w-24">加密模式</span>
+                            <i class="fa fa-long-arrow-right text-gray-600"></i>
+                            <code class="text-secondary">AES.MODE_CBC</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 w-24">IV向量</span>
+                            <i class="fa fa-long-arrow-right text-gray-600"></i>
+                            <code class="text-secondary">key[:16]</code>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-gray-400 w-24">填充方式</span>
+                            <i class="fa fa-long-arrow-right text-gray-600"></i>
+                            <code class="text-secondary">PKCS7 (unpad)</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 要点总结 -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-1 h-6 bg-gradient-to-b from-primary to-secondary rounded-full"></span>
+                核心要点总结
+            </h2>
+
+            <div class="grid md:grid-cols-2 gap-4">
+                <div class="glass rounded-xl p-5 border border-gray-700/50 hover:border-primary/40 transition-colors">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-primary/20 text-primary flex items-center justify-center">
+                            <i class="fa fa-search"></i>
+                        </div>
+                        <h3 class="font-semibold">逆向思路</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        APP能显示明文就一定有解密逻辑，不要尝试暴力破解密钥，沿着数据处理链路追踪是最高效的方式。
+                    </p>
+                </div>
+                <div class="glass rounded-xl p-5 border border-gray-700/50 hover:border-secondary/40 transition-colors">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-secondary/20 text-secondary flex items-center justify-center">
+                            <i class="fa fa-lightbulb-o"></i>
+                        </div>
+                        <h3 class="font-semibold">密钥特征</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        22位字符串+补"=="是Base64编码16字节密钥的典型特征，不要因为长度不是16/24/32就误判不是AES密钥。
+                    </p>
+                </div>
+                <div class="glass rounded-xl p-5 border border-gray-700/50 hover:border-accent/40 transition-colors">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-accent/20 text-accent flex items-center justify-center">
+                            <i class="fa fa-random"></i>
+                        </div>
+                        <h3 class="font-semibold">IV的规律</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        很多简单的APP实现中，IV不会单独生成或传输，经常直接使用密钥前16位或固定字符串，不要盲目寻找。
+                    </p>
+                </div>
+                <div class="glass rounded-xl p-5 border border-gray-700/50 hover:border-green-500/40 transition-colors">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-lg bg-green-500/20 text-green-400 flex items-center justify-center">
+                            <i class="fa fa-code"></i>
+                        </div>
+                        <h3 class="font-semibold">跨语言复现</h3>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed">
+                        Java和Python的加密库参数对应关系：AES/CBC/PKCS5Padding 等价于 AES.MODE_CBC + unpad(PKCS7)。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 解密流程图 -->
+        <section class="mb-16">
+            <h2 class="text-2xl font-bold mb-6 flex items-center gap-3">
+                <span class="w-1 h-6 bg-gradient-to-b from-primary to-secondary rounded-full"></span>
+                完整解密流程
+            </h2>
+
+            <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-4 md:gap-2">
+                    <div class="flex-1 text-center p-4 rounded-xl bg-dark/60 border border-gray-700/50">
+                        <div class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-download"></i>
+                        </div>
+                        <div class="font-medium text-sm">抓包获取密文</div>
+                    </div>
+                    <i class="fa fa-long-arrow-right text-gray-600 md:rotate-0 rotate-90"></i>
+                    <div class="flex-1 text-center p-4 rounded-xl bg-dark/60 border border-gray-700/50">
+                        <div class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-file-code-o"></i>
+                        </div>
+                        <div class="font-medium text-sm">jadx反编译APK</div>
+                    </div>
+                    <i class="fa fa-long-arrow-right text-gray-600 md:rotate-0 rotate-90"></i>
+                    <div class="flex-1 text-center p-4 rounded-xl bg-dark/60 border border-gray-700/50">
+                        <div class="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-crosshairs"></i>
+                        </div>
+                        <div class="font-medium text-sm">定位解密方法</div>
+                    </div>
+                    <i class="fa fa-long-arrow-right text-gray-600 md:rotate-0 rotate-90"></i>
+                    <div class="flex-1 text-center p-4 rounded-xl bg-dark/60 border border-gray-700/50">
+                        <div class="w-10 h-10 rounded-full bg-accent/20 text-accent flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-key"></i>
+                        </div>
+                        <div class="font-medium text-sm">提取密钥与IV</div>
+                    </div>
+                    <i class="fa fa-long-arrow-right text-gray-600 md:rotate-0 rotate-90"></i>
+                    <div class="flex-1 text-center p-4 rounded-xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center mx-auto mb-2">
+                            <i class="fa fa-check"></i>
+                        </div>
+                        <div class="font-medium text-sm">Python解密成功</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 法律声明 -->
+        <section class="mb-8">
+            <div class="glass rounded-2xl p-6 border border-red-500/20 bg-red-500/5">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
+                        <i class="fa fa-gavel"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-red-400 mb-2">法律声明</h3>
+                        <p class="text-sm text-gray-300 leading-relaxed">
+                            本教程仅用于<span class="text-red-300 font-medium">网络安全学习和技术研究</span>目的，所有分析对象均为公开可获取的应用程序。请勿将所学技术用于非法爬取数据、商业牟利或破坏计算机系统等违法行为，由此产生的一切法律责任由使用者自行承担。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="border-t border-gray-800 bg-dark/80 backdrop-blur-sm py-10 relative overflow-hidden">
+        <div class="absolute top-0 left-1/4 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-flask text-primary"></i>
+                    <span class="font-bold">逆向实战教程</span>
+                </div>
+                <div class="text-center md:text-right">
+                    <div class="text-sm text-gray-400">
+                        © 2026 <span class="bg-gradient-to-r from-primary to-accent text-gradient font-medium">HaleShi</span> · 技术教学案例集
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">仅供学习交流，请勿用于非法用途</div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 移动端底部导航 -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-gray-700/50 z-40 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex items-center justify-around py-2">
+            <a href="#overview" class="mobile-nav-link flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-gray-400 text-xs transition-colors">
+                <i class="fa fa-eye text-lg"></i>
+                <span>概览</span>
+            </a>
+            <a href="#step1" class="mobile-nav-link flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-gray-400 text-xs transition-colors">
+                <i class="fa fa-search text-lg"></i>
+                <span>定位</span>
+            </a>
+            <a href="#step2" class="mobile-nav-link flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-gray-400 text-xs transition-colors">
+                <i class="fa fa-code text-lg"></i>
+                <span>分析</span>
+            </a>
+            <a href="#step3" class="mobile-nav-link flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-gray-400 text-xs transition-colors">
+                <i class="fa fa-cogs text-lg"></i>
+                <span>还原</span>
+            </a>
+            <a href="#code" class="mobile-nav-link flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-gray-400 text-xs transition-colors">
+                <i class="fa fa-file-code-o text-lg"></i>
+                <span>代码</span>
+            </a>
+        </div>
+    </nav>
+
+    <script>
+        // 初始化代码高亮
+        hljs.highlightAll();
+
+        // 阅读进度条
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('readingProgress').style.width = scrolled + '%';
+
+            // 回到顶部按钮显示/隐藏
+            const backToTop = document.getElementById('backToTop');
+            if (winScroll > 400) {
+                backToTop.classList.remove('hidden');
+                backToTop.classList.add('flex');
+            } else {
+                backToTop.classList.add('hidden');
+                backToTop.classList.remove('flex');
+            }
+
+            // 导航高亮
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-link, .mobile-nav-link');
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                if (winScroll >= sectionTop) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // 回到顶部
+        document.getElementById('backToTop').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (navigator.vibrate) navigator.vibrate(50);
+        });
+
+        // 数字计数动画
+        function animateNumber(element, target, duration = 1500) {
+            let start = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                start += increment;
+                if (start >= target) {
+                    element.textContent = target;
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.floor(start);
+                }
+            }, 16);
+        }
+
+        // 观察器触发动画
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateNumber(document.getElementById('stepCount'), 4);
+                    animateNumber(document.getElementById('keyLength'), 128);
+                    observer.disconnect();
+                }
+            });
+        }, { threshold: 0.5 });
+        observer.observe(document.getElementById('stepCount'));
+
+        // 复制代码功能
+        function copyCode(btn) {
+            const codeBlock = btn.closest('.code-block').querySelector('code');
+            const text = codeBlock.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-check"></i>';
+                btn.classList.add('text-green-400');
+                if (navigator.vibrate) navigator.vibrate(30);
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('text-green-400');
+                }, 2000);
+            }).catch(() => {
+                // 降级方案
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fa fa-check"></i>';
+                btn.classList.add('text-green-400');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('text-green-400');
+                }, 2000);
+            });
+        }
+
+        // 移动端导航点击反馈
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navigator.vibrate) navigator.vibrate(30);
+            });
+        });
+    </script>
+</body>
+</html><!--09511721662395614730092019-->
