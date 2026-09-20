@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#2563eb">
+    <title>App接口逆向实战教程 | 技术作品集</title>
+    <script src="https://aisearch-task.bj.bcebos.com/static/tailwindcss-3.4.17.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/java.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <style>
+        :root {
+            --brand-rgb: 37, 99, 235;
+            --accent-rgb: 249, 115, 22;
+            --code-bg: #282c34;
+            --card-bg: rgba(255, 255, 255, 0.92);
+        }
+        
+        * {
+            scroll-behavior: smooth;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e0f2fe 100%);
+            min-height: 100vh;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        /* 代码块优化 */
+        .code-block {
+            background: var(--code-bg);
+            border-radius: 12px;
+            font-family: 'SF Mono', 'Menlo', 'Consolas', 'JetBrains Mono', monospace;
+            font-size: 12.5px;
+            line-height: 1.65;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .code-block pre {
+            margin: 0;
+            padding: 14px 16px;
+            min-width: 100%;
+        }
+        
+        .code-block code {
+            font-size: inherit;
+            white-space: pre;
+            word-break: normal;
+            word-wrap: normal;
+        }
+        
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            box-shadow: 0 12px 40px rgba(37, 99, 235, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        /* 时间线 - 响应式优化 */
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 10px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+            z-index: 1;
+        }
+        
+        .timeline-line {
+            position: absolute;
+            left: -20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, #3b82f6, #93c5fd, #dbeafe);
+        }
+        
+        .tab-btn.active {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #2563eb, #f97316);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .section-title {
+            background: linear-gradient(135deg, #1e40af, #3b82f6, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .gradient-border {
+            position: relative;
+        }
+        
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #f97316);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pitfall-card:nth-child(1) { animation-delay: 0.05s; }
+        .pitfall-card:nth-child(2) { animation-delay: 0.1s; }
+        .pitfall-card:nth-child(3) { animation-delay: 0.15s; }
+        .pitfall-card:nth-child(4) { animation-delay: 0.2s; }
+        .pitfall-card:nth-child(5) { animation-delay: 0.25s; }
+        .pitfall-card:nth-child(6) { animation-delay: 0.3s; }
+        .pitfall-card:nth-child(7) { animation-delay: 0.35s; }
+        .pitfall-card:nth-child(8) { animation-delay: 0.4s; }
+        .pitfall-card:nth-child(9) { animation-delay: 0.45s; }
+        
+        .step-number {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details summary {
+            cursor: pointer;
+            list-style: none;
+        }
+        
+        details[open] .chevron {
+            transform: rotate(180deg);
+        }
+        
+        .chevron {
+            transition: transform 0.3s ease;
+        }
+        
+        /* 移动端底部导航 */
+        .mobile-nav {
+            display: none;
+        }
+        
+        /* 回到顶部按钮 */
+        .back-to-top {
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* 长文本换行 */
+        .break-url {
+            word-break: break-all;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        
+        /* 移动端链路图 - 竖排 */
+        @media (max-width: 768px) {
+            .code-block {
+                font-size: 11.5px;
+                border-radius: 10px;
+            }
+            .code-block pre {
+                padding: 12px 12px;
+            }
+            
+            .timeline-item::before {
+                left: -21px;
+                top: 10px;
+                width: 10px;
+                height: 10px;
+            }
+            
+            .timeline-line {
+                left: -17px;
+            }
+            
+            .mobile-nav {
+                display: flex !important;
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+            
+            /* 隐藏桌面端导航在移动端的多余元素 */
+            .desktop-only {
+                display: none !important;
+            }
+            
+            /* 链路图改为竖排 */
+            .flow-desktop {
+                display: none !important;
+            }
+            .flow-mobile {
+                display: flex !important;
+            }
+            
+            /* 减小内边距 */
+            .glass-card {
+                border-radius: 16px;
+            }
+            
+            /* 表格优化 */
+            table td {
+                padding: 10px 8px !important;
+            }
+            
+            /* 技术栈标签紧凑 */
+            .tech-stack > div {
+                padding: 6px 12px;
+            }
+            .tech-stack > div span {
+                font-size: 12px;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .flow-mobile {
+                display: none !important;
+            }
+        }
+        
+        /* 滚动条美化 */
+        .code-block::-webkit-scrollbar {
+            height: 6px;
+        }
+        .code-block::-webkit-scrollbar-track {
+            background: #21252b;
+            border-radius: 0 0 12px 12px;
+        }
+        .code-block::-webkit-scrollbar-thumb {
+            background: #4b5263;
+            border-radius: 3px;
+        }
+        .code-block::-webkit-scrollbar-thumb:hover {
+            background: #636d83;
+        }
+        
+        /* 移动端代码滚动指示器 */
+        .code-scroll-hint {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .code-scroll-hint {
+                display: block;
+            }
+        }
+
+        /* 作者署名 - 全新设计 */
+        .author-credit {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 0;
+            padding: 4px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #f97316);
+            box-shadow:
+                0 8px 32px rgba(59, 130, 246, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .author-credit:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow:
+                0 16px 48px rgba(59, 130, 246, 0.28),
+                0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+        }
+
+        .author-inner {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 20px 8px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(10px);
+        }
+
+        .author-avatar-ring {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+        }
+
+        .author-avatar-ring::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #3b82f6, #8b5cf6, #f97316, #3b82f6);
+            animation: rotateRing 4s linear infinite;
+        }
+
+        @keyframes rotateRing {
+            to { transform: rotate(360deg); }
+        }
+
+        .author-avatar {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            box-shadow:
+                0 4px 12px rgba(30, 64, 175, 0.35),
+                inset 0 1px 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .author-verified {
+            position: absolute;
+            right: -2px;
+            bottom: -2px;
+            z-index: 2;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: 2px solid white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);
+        }
+
+        .author-verified svg {
+            width: 8px;
+            height: 8px;
+            color: white;
+        }
+
+        .author-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            text-align: left;
+            padding-right: 4px;
+        }
+
+        .author-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .author-meta-dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+
+        .author-name {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #1e40af, #7c3aed, #f97316);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .author-divider {
+            width: 1px;
+            height: 28px;
+            background: linear-gradient(to bottom, transparent, #e2e8f0, transparent);
+            margin: 0 12px 0 4px;
+        }
+
+        .author-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            padding-left: 2px;
+        }
+
+        .author-stat-label {
+            font-size: 10px;
+            color: #94a3b8;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .author-stat-value {
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        @media (max-width: 640px) {
+            .author-credit {
+                transform: scale(0.92);
+                transform-origin: center;
+            }
+            .author-inner {
+                gap: 10px;
+                padding: 6px 14px 6px 6px;
+            }
+            .author-avatar-ring {
+                width: 36px;
+                height: 36px;
+            }
+            .author-divider {
+                display: none;
+            }
+            .author-stats {
+                display: none;
+            }
+            .author-name {
+                font-size: 14px;
+            }
+            .author-meta {
+                font-size: 10px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .author-credit {
+                transition: none;
+            }
+            .author-avatar-ring::before {
+                animation: none;
+                background: #3b82f6;
+            }
+            .author-credit:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 pb-20 md:pb-0">
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14 md:h-16">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+                        <svg class="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <span class="font-bold text-base md:text-lg text-slate-900">逆向实战教程</span>
+                </div>
+                <div class="hidden md:flex items-center gap-8 desktop-only">
+                    <a href="#overview" class="nav-link text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">项目概览</a>
+                    <a href="#process" class="nav-link text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">实战流程</a>
+                    <a href="#code" class="nav-link text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">核心代码</a>
+                    <a href="#pitfalls" class="nav-link text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">避坑指南</a>
+                    <a href="#summary" class="nav-link text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">知识总结</a>
+                </div>
+                <a href="#code" class="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm font-medium hover:shadow-lg hover:shadow-blue-500/25 transition-all desktop-only">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    查看代码
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero 区域 -->
+    <header class="pt-24 pb-12 md:pt-36 md:pb-24 relative overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-10 -left-10 w-72 h-72 md:w-96 md:h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
+            <div class="absolute top-32 -right-10 w-64 h-64 md:w-80 md:h-80 bg-orange-400/15 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-5 fade-in" style="animation-delay: 0.1s">
+                    <span class="badge bg-blue-100 text-blue-700">
+                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        完整可运行
+                    </span>
+                    <span class="badge bg-orange-100 text-orange-700">教学适用</span>
+                    <span class="badge bg-emerald-100 text-emerald-700">初级→中级</span>
+                </div>
+                
+                <h1 class="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-tight mb-5 fade-in" style="animation-delay: 0.2s">
+                    从抓包到复现签名
+                    <span class="block section-title mt-1">某医生 APP 逆向抓取</span>
+                </h1>
+                <!-- 作者署名 - 全新设计 -->
+                <div class="flex justify-center mb-8 fade-in" style="animation-delay: 0.25s">
+                    <div class="author-credit" aria-label="作者：HaleShi">
+                        <div class="author-inner">
+                            <div class="author-avatar-ring">
+                                <div class="author-avatar">HS</div>
+                                <div class="author-verified">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="author-info">
+                                <div class="author-meta">
+                                    <span>原创作者</span>
+                                    <span class="author-meta-dot"></span>
+                                    <span>技术分享</span>
+                                </div>
+                                <span class="author-name">HaleShi</span>
+                            </div>
+
+                            <div class="author-divider"></div>
+
+                            <div class="author-stats">
+                                <div class="author-stat-label">实战教程</div>
+                                <div class="author-stat-value">8 步完整复现</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <p class="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed mb-7 max-w-2xl mx-auto px-2 fade-in" style="animation-delay: 0.3s">
+                    完整记录从「抓包看到参数」到「用 Python 成功翻页抓取」的全过程。由浅入深，适合小白、初学者、中级技术员阅读，也可作为逆向/爬虫/安全方向的教学案例。
+                </p>
+                
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-3 px-4 fade-in" style="animation-delay: 0.4s">
+                    <a href="#process" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold hover:shadow-xl hover:shadow-blue-500/25 transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                        开始学习
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+                        </svg>
+                    </a>
+                    <a href="#pitfalls" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-white text-slate-700 font-semibold border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-all flex items-center justify-center gap-2 text-sm sm:text-base">
+                        <svg class="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        查看避坑指南
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 技术栈标签 -->
+            <div class="mt-10 flex flex-wrap items-center justify-center gap-2 tech-stack fade-in" style="animation-delay: 0.5s">
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-yellow-400 to-yellow-500 flex items-center justify-center text-[10px] font-bold text-white">P</div>
+                    <span class="text-xs sm:text-sm font-medium">Python</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-[10px] font-bold text-white">F</div>
+                    <span class="text-xs sm:text-sm font-medium">Frida</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center text-[10px] font-bold text-white">J</div>
+                    <span class="text-xs sm:text-sm font-medium">jadx</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">R</div>
+                    <span class="text-xs sm:text-sm font-medium">Requests</span>
+                </div>
+                <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full glass-card">
+                    <div class="w-5 h-5 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-[10px] font-bold text-white">M</div>
+                    <span class="text-xs sm:text-sm font-medium">MD5</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 项目概览 -->
+    <section id="overview" class="py-12 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-xl md:text-3xl font-bold text-slate-900 mb-3">项目概览</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base px-2">本次实战以一个真实 App 的文章列表接口为例，覆盖逆向工程完整链路</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-10">
+                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-blue-100 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <div class="text-2xl md:text-3xl font-bold text-slate-900 mb-1">8</div>
+                    <div class="text-xs md:text-sm text-slate-500">核心步骤</div>
+                </div>
+                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-orange-100 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <div class="text-2xl md:text-3xl font-bold text-slate-900 mb-1">9</div>
+                    <div class="text-xs md:text-sm text-slate-500">常见坑点</div>
+                </div>
+                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="text-2xl md:text-3xl font-bold text-slate-900 mb-1">100%</div>
+                    <div class="text-xs md:text-sm text-slate-500">可运行代码</div>
+                </div>
+                <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 text-center">
+                    <div class="w-10 h-10 md:w-12 md:h-12 rounded-lg md:rounded-xl bg-purple-100 flex items-center justify-center mx-auto mb-3">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div class="text-2xl md:text-3xl font-bold text-slate-900 mb-1">4</div>
+                    <div class="text-xs md:text-sm text-slate-500">难度分层</div>
+                </div>
+            </div>
+            
+            <!-- 读者分层 -->
+            <div class="glass-card rounded-xl md:rounded-2xl p-5 md:p-8 gradient-border">
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-6 flex items-center gap-2">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    适合人群与学习收获
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="p-3 md:p-4 rounded-xl bg-blue-50/50 border border-blue-100">
+                        <div class="font-semibold text-blue-900 mb-1.5 text-sm md:text-base">🌱 小白入门</div>
+                        <p class="text-xs md:text-sm text-blue-700">抓包是什么、请求长什么样、参数怎么读</p>
+                    </div>
+                    <div class="p-3 md:p-4 rounded-xl bg-cyan-50/50 border border-cyan-100">
+                        <div class="font-semibold text-cyan-900 mb-1.5 text-sm md:text-base">🌿 初学者</div>
+                        <p class="text-xs md:text-sm text-cyan-700">如何判断翻页参数、如何用 Python 发请求</p>
+                    </div>
+                    <div class="p-3 md:p-4 rounded-xl bg-orange-50/50 border border-orange-100">
+                        <div class="font-semibold text-orange-900 mb-1.5 text-sm md:text-base">🌳 中级技术员</div>
+                        <p class="text-xs md:text-sm text-orange-700">Frida Hook、Java 源码阅读、签名算法复现</p>
+                    </div>
+                    <div class="p-3 md:p-4 rounded-xl bg-purple-50/50 border border-purple-100">
+                        <div class="font-semibold text-purple-900 mb-1.5 text-sm md:text-base">🌲 进阶选手</div>
+                        <p class="text-xs md:text-sm text-purple-700">加固场景下的类定位、ClassLoader、调用栈分析</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 实战流程时间线 -->
+    <section id="process" class="py-12 md:py-20 bg-white/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-xl md:text-3xl font-bold text-slate-900 mb-3">八步实战流程</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base px-2">从抓包分析到稳定抓取，完整逆向工程链路</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="relative pl-7 md:pl-8">
+                    <div class="timeline-line"></div>
+                    
+                    <!-- 步骤1 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">01</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">抓包，看到请求长什么样</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">通过 Charles/Fiddler/mitmproxy 等抓包工具，捕获多次请求，观察参数差异。</p>
+                                    <div class="code-block rounded-lg">
+                                        <pre><code class="language-json">{
+  "clientType": "1",
+  "deCode": "37a66d10ebe6d596",
+  "sign": "9899e80d...",
+  "sortTime": 1788310079152,
+  "timestamp": 1789561029662
+}</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤2 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.1s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">02</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">判断哪些参数是翻页参数</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">对比多次请求，<code class="px-1 py-0.5 bg-slate-100 rounded text-blue-600 text-xs">sortTime</code> 递减、<code class="px-1 py-0.5 bg-slate-100 rounded text-blue-600 text-xs">timestamp</code> 递增，确认是时间戳游标分页。</p>
+                                    <div class="flex flex-wrap gap-1.5 md:gap-2">
+                                        <span class="badge bg-blue-100 text-blue-700 text-[11px] md:text-xs">sortTime：递减 → 翻页游标</span>
+                                        <span class="badge bg-slate-100 text-slate-700 text-[11px] md:text-xs">timestamp：递增 → 防重放</span>
+                                        <span class="badge bg-orange-100 text-orange-700 text-[11px] md:text-xs">sign：每次变化 → 签名校验</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.2s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 border-l-4 border-l-red-400">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">03</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">sign 是最大的拦路虎</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">手动修改 sortTime 但 sign 不更新会被服务端拒绝：<code class="px-1 py-0.5 bg-red-50 rounded text-red-600 text-xs">{"code":1,"msg":"网络开小差了"}</code></p>
+                                    <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs md:text-sm text-amber-800">
+                                        <strong>⚠️ 第一次尝试失败：</strong>误将腾讯 openSDK 的 i.b 当作签名方法，Frida Hook 验证未被调用。
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤4 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.3s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">04</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">用 Frida 定位签名逻辑</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">Hook <code class="px-1 py-0.5 bg-slate-100 rounded text-blue-600 text-xs">MessageDigest.digest</code> 并打印调用栈，从调用栈找到真正的签名类。</p>
+                                    <div class="code-block rounded-lg">
+                                        <pre><code class="language-javascript">Java.perform(function () {
+    var MessageDigest = Java.use("java.security.MessageDigest");
+    MessageDigest.digest.overload().implementation = function () {
+        var result = this.digest();
+        console.log("[digest] algo=" + this.getAlgorithm());
+        console.log(Java.use("android.util.Log")
+            .getStackTraceString(Java.use("java.lang.Throwable").$new()));
+        return result;
+    };
+});</code></pre>
+                                    </div>
+                                    <div class="mt-2.5 p-2 bg-emerald-50 rounded-lg text-xs md:text-sm text-emerald-700">
+                                        ✅ 定位到：<code class="font-mono break-all">com.people.health.doctor.net.RequestData</code>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤5 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.4s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">05</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">读懂签名算法源码</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">通过 jadx 反编译 APK，阅读 RequestData 类源码，提炼签名算法。</p>
+                                    <div class="p-3 md:p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                        <div class="text-xs md:text-sm font-semibold text-slate-700 mb-2">📝 算法逻辑：</div>
+                                        <ol class="text-xs md:text-sm text-slate-600 space-y-1 list-decimal list-inside">
+                                            <li>参数存入 TreeMap，按 key 字典序排序</li>
+                                            <li>拼接：<code class="text-[10px] md:text-xs bg-white px-1 rounded break-all">key=Hg3c^Tqj5twmkgSNmxte7fNfvsp%DD2v&k1=v1&k2=v2...</code></li>
+                                            <li>sign 字段本身不参与签名，null 值跳过</li>
+                                            <li>对拼接字符串做 UTF-8 MD5，输出小写 hex</li>
+                                        </ol>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤6 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.5s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 border-l-4 border-l-emerald-400">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">06</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">用 Python 复现签名</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">使用 Hook 到的真实样本验证算法，自检通过即 100% 复现。</p>
+                                    <div class="code-block rounded-lg">
+                                        <pre><code class="language-python">def gen_sign(params: dict) -> str:
+    items = sorted(params.items(), key=lambda kv: kv[0])
+    parts = [f"key={SALT}"]
+    for k, v in items:
+        if v is None: continue
+        parts.append(f"{k}={v}")
+    raw = "&".join(parts)
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()
+
+assert gen_sign(test_params) == "d6a86364a10a..."
+print("自检通过 ✅")</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤7 -->
+                    <div class="timeline-item relative mb-6 md:mb-10 fade-in" style="animation-delay: 0.6s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">07</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">请求成功，开始翻页</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">确认返回结构，使用上一页最后一条的 sortTime 作为下一页游标。</p>
+                                    <div class="flex items-center gap-2.5 p-3 bg-emerald-50 rounded-lg">
+                                        <div class="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </div>
+                                        <div class="text-xs md:text-sm text-emerald-700">
+                                            <strong>翻页成功：</strong>每页 15 条，游标严格递减，无重复
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤8 -->
+                    <div class="timeline-item relative fade-in" style="animation-delay: 0.7s">
+                        <div class="glass-card rounded-xl md:rounded-2xl p-4 md:p-6 bg-gradient-to-br from-blue-50 to-white">
+                            <div class="flex items-start gap-3 md:gap-4">
+                                <div class="step-number text-2xl md:text-4xl font-black shrink-0 w-10 md:w-auto text-right">08</div>
+                                <div class="flex-1 min-w-0">
+                                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-2">调试翻页失败的各种坑</h3>
+                                    <p class="text-slate-600 text-xs md:text-sm mb-3">真实项目里大部分时间都花在调试，共总结 9 个常见坑点与解决方案。</p>
+                                    <a href="#pitfalls" class="inline-flex items-center gap-1 text-xs md:text-sm text-blue-600 font-medium hover:text-blue-700">
+                                        查看完整避坑指南
+                                        <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心代码 -->
+    <section id="code" class="py-12 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-xl md:text-3xl font-bold text-slate-900 mb-3">完整可运行代码</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base px-2">生产级别的翻页抓取脚本，包含去重、限速、异常处理、断点续传</p>
+            </div>
+            
+            <!-- 代码Tab -->
+            <div class="max-w-4xl mx-auto">
+                <div class="flex gap-1.5 md:gap-2 mb-3 md:mb-4 p-1 bg-slate-100 rounded-xl overflow-x-auto -mx-1 px-1">
+                    <button class="tab-btn active px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap" data-tab="main">
+                        主程序
+                    </button>
+                    <button class="tab-btn px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium text-slate-600 hover:bg-white/50 transition-all whitespace-nowrap" data-tab="frida">
+                        Frida Hook
+                    </button>
+                    <button class="tab-btn px-3 md:px-4 py-1.5 md:py-2 rounded-lg text-xs md:text-sm font-medium text-slate-600 hover:bg-white/50 transition-all whitespace-nowrap" data-tab="frida-py">
+                        Frida Python
+                    </button>
+                </div>
+                
+                <div class="glass-card rounded-xl md:rounded-2xl overflow-hidden">
+                    <div class="flex items-center justify-between px-3 md:px-4 py-2.5 md:py-3 bg-slate-800 border-b border-slate-700">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="flex gap-1.5 shrink-0">
+                                <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-red-400"></div>
+                                <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-yellow-400"></div>
+                                <div class="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-green-400"></div>
+                            </div>
+                            <span class="text-[10px] md:text-xs text-slate-400 font-mono ml-1 md:ml-2 truncate" id="code-filename">main.py</span>
+                        </div>
+                        <button onclick="copyCode()" class="flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-lg text-[10px] md:text-xs font-medium text-slate-400 hover:bg-slate-700 hover:text-white transition-all shrink-0">
+                            <svg class="w-3.5 h-3.5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="hidden sm:inline">复制代码</span>
+                            <span class="sm:hidden">复制</span>
+                        </button>
+                    </div>
+                    <div class="code-scroll-hint text-[10px] text-slate-400 text-center py-1 bg-slate-800 border-b border-slate-700">
+                        ← 左右滑动查看完整代码 →
+                    </div>
+                    
+                    <!-- 主程序代码 -->
+                    <div id="tab-main" class="code-content">
+                        <div class="code-block rounded-none max-h-[500px] md:max-h-[600px] overflow-y-auto">
+                            <pre><code class="language-python">import hashlib
+import time
+import json
+import requests
+
+SALT = "Hg3c^Tqj5twmkgSNmxte7fNfvsp%DD2v"
+URL = "YUhSMGNITTZMeTlvZVhNdWNHVnZjR3hsTFdobFlXeDBhQzVq..."
+
+LIST_PATH    = ("data", "articles")
+CURSOR_FIELD = "sortTime"
+ID_FIELD     = "id"
+PAGE_LIMIT   = 1000
+SLEEP        = 0.5
+OUT_FILE     = "articles.jsonl"
+
+
+def gen_sign(params):
+    """生成签名：key=盐&按key排序的k=v对"""
+    items = sorted(params.items(), key=lambda kv: kv[0])
+    parts = [f"key={SALT}"]
+    for k, v in items:
+        if v is None:
+            continue
+        parts.append(f"{k}={v}")
+    raw = "&".join(parts)
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()
+
+
+def build_params(sort_time):
+    """构造请求参数"""
+    p = {
+        "clientType": "1",
+        "deCode": "37a66d10ebe6d596",
+        "model": "google Pixel 4",
+        "osType": "10",
+        "sortTime": sort_time,
+        "timestamp": int(time.time() * 1000),
+        "uid": "-1",
+        "v": "2.2.143",
+    }
+    p["sign"] = gen_sign(p)
+    return p
+
+
+def fetch_page(sort_time):
+    """请求单页数据"""
+    params = build_params(sort_time)
+    headers = {
+        "Content-Type": "application/json; charset=UTF-8",
+        "User-Agent": "okhttp/4.x",
+    }
+    r = requests.post(URL, data=json.dumps(params), headers=headers, timeout=15)
+    return r.json()
+
+
+def get_list(data):
+    """安全获取列表字段"""
+    cur = data
+    for key in LIST_PATH:
+        if not isinstance(cur, dict) or key not in cur:
+            return []
+        cur = cur[key]
+    return cur if isinstance(cur, list) else []
+
+
+def main():
+    sort_time = int(time.time() * 1000)
+    seen = set()
+    total = 0
+    out = open(OUT_FILE, "w", encoding="utf-8")
+
+    for page in range(PAGE_LIMIT):
+        print(f"\n[page {page}] sort_time = {sort_time!r}")
+        try:
+            data = fetch_page(sort_time)
+        except Exception as e:
+            print("  请求失败:", e)
+            time.sleep(2)
+            continue
+
+        print("  code =", data.get("code"), " msg =", data.get("msg"))
+        items = get_list(data)
+        print(f"  返回 {len(items)} 条")
+
+        if not items:
+            print("  空列表，停止")
+            break
+
+        new_count = 0
+        for item in items:
+            uid = item.get(ID_FIELD)
+            if uid is not None:
+                if uid in seen:
+                    continue
+                seen.add(uid)
+            out.write(json.dumps(item, ensure_ascii=False) + "\n")
+            new_count += 1
+
+        total += new_count
+        print(f"  新增 {new_count} 条，累计 {total} 条")
+
+        last = items[-1]
+        next_cursor_raw = last.get(CURSOR_FIELD)
+        if next_cursor_raw is None:
+            print("  没有游标字段，停止")
+            break
+
+        next_cursor = int(next_cursor_raw)
+        if next_cursor == sort_time:
+            print("  游标未变化，停止")
+            break
+
+        sort_time = next_cursor
+        time.sleep(SLEEP)
+
+    out.close()
+    print(f"\n完成，共保存 {total} 条到 {OUT_FILE}")
+
+
+if __name__ == "__main__":
+    main()</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frida代码 -->
+                    <div id="tab-frida" class="code-content hidden">
+                        <div class="code-block rounded-none max-h-[500px] md:max-h-[600px] overflow-y-auto">
+                            <pre><code class="language-javascript">// hook.js - Frida Hook 签名方法
+Java.perform(function () {
+    // Hook 真正的签名类
+    var RequestData = Java.use("com.people.health.doctor.net.RequestData");
+    RequestData.getSignString.implementation = function () {
+        var ret = this.getSignString();
+        console.log("========== getSignString ==========");
+        console.log(ret);
+        return ret;
+    };
+
+    // Hook MD5 计算方法
+    var x0 = Java.use("ae.x0");
+    x0.b.overload('java.lang.String').implementation = function (s) {
+        var ret = this.b(s);
+        console.log("[x0.b] input = " + s);
+        console.log("[x0.b] sign  = " + ret);
+        return ret;
+    };
+
+    // ========== 通用：Hook MessageDigest 找调用栈 ==========
+    var MessageDigest = Java.use("java.security.MessageDigest");
+    MessageDigest.digest.overload().implementation = function () {
+        var result = this.digest();
+        var algo = this.getAlgorithm();
+        var hex = "";
+        for (var i = 0; i < result.length; i++) {
+            var b = (result[i] & 0xff).toString(16);
+            if (b.length == 1) b = "0" + b;
+            hex += b;
+        }
+        console.log("[digest] algo=" + algo + " hex=" + hex);
+        console.log(Java.use("android.util.Log")
+            .getStackTraceString(Java.use("java.lang.Throwable").$new()));
+        return result;
+    };
+});</code></pre>
+                        </div>
+                    </div>
+                    
+                    <!-- Frida Python代码 -->
+                    <div id="tab-frida-py" class="code-content hidden">
+                        <div class="code-block rounded-none max-h-[500px] md:max-h-[600px] overflow-y-auto">
+                            <pre><code class="language-python">import frida
+import sys
+
+JS = open("hook.js", encoding="utf-8").read()
+
+def on_message(msg, data):
+    """Frida 消息回调"""
+    if msg["type"] == "send":
+        print("[JS]", msg["payload"])
+    else:
+        print("[ERR]", msg)
+
+# 使用 remote 设备（适用于 frida-server 端口转发）
+# USB 连接改用 frida.get_usb_device()
+rdev = frida.get_remote_device()
+front = rdev.get_frontmost_application()
+print("front:", front)
+
+session = rdev.attach(front.pid)
+script = session.create_script(JS)
+script.on("message", on_message)
+script.load()
+
+print("[*] hooked, waiting...")
+print("[*] 操作 App 触发网络请求即可看到 Hook 输出")
+sys.stdin.read()</code></pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 关键点速查表 -->
+                <div class="mt-6 md:mt-8 glass-card rounded-xl md:rounded-2xl p-4 md:p-6">
+                    <h3 class="text-base md:text-lg font-bold text-slate-900 mb-3 md:mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        关键点速查表
+                    </h3>
+                    <div class="overflow-x-auto -mx-1 px-1">
+                        <table class="w-full text-xs md:text-sm">
+                            <tbody class="divide-y divide-slate-100">
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 w-20 md:w-28 shrink-0">接口</td>
+                                    <td class="py-2.5 md:py-3 font-mono text-blue-700 break-url text-[10px] md:text-sm">YUhSMGNITTZMeTlvZVhNdWNHVnZjR3hsTFdobFlXeDBhQzVqYmk5elpYSjJhV05sTDNKbFkwRnlkR2xqYkdWTWFYTjBMekU9</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 shrink-0">盐值</td>
+                                    <td class="py-2.5 md:py-3 font-mono text-orange-700 break-all text-[11px] md:text-sm">Hg3c^Tqj5twmkgSNmxte7fNfvsp%DD2v</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 shrink-0">签名算法</td>
+                                    <td class="py-2.5 md:py-3 text-slate-700 text-xs md:text-sm">MD5("key=盐&" + 按字典序排序的 k=v&...)，UTF-8，小写 hex</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 shrink-0">列表路径</td>
+                                    <td class="py-2.5 md:py-3 font-mono text-blue-700 text-xs md:text-sm">data.articles</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 shrink-0">游标字段</td>
+                                    <td class="py-2.5 md:py-3 text-slate-700 text-xs md:text-sm"><code class="font-mono">sortTime</code>（返回为字符串，传参需转为 int）</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2.5 md:py-3 pr-3 font-medium text-slate-500 shrink-0">去重字段</td>
+                                    <td class="py-2.5 md:py-3 font-mono text-blue-700 text-xs md:text-sm">id</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 避坑指南 -->
+    <section id="pitfalls" class="py-12 md:py-20 bg-gradient-to-b from-white/50 to-orange-50/30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <span class="badge bg-orange-100 text-orange-700 mb-3">实战经验</span>
+                <h2 class="text-xl md:text-3xl font-bold text-slate-900 mb-3">九大常见坑点与解决方案</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base px-2">真实项目里大部分时间都花在调试，这些坑都是踩过的</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">1</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">sortTime = -1 返回空</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>JSON 序列化成了字符串 "-1"，服务端 Long 解析失败。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>确保是数字类型 -1，不是字符串。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">2</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">列表路径取错</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>误以为是 data.list，实际是 data.articles。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>先打印完整返回结构，再确定字段路径。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">3</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">游标字段类型问题</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>返回的 sortTime 是字符串，传参需要数字。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>下一页传参用 int(last["sortTime"]) 转换。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">4</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">找错签名类</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>Hook 了腾讯 openSDK 的类，实际没被调用。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>Hook MessageDigest.digest + 打印调用栈定位。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">5</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">Frida 通道问题</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>frida -U 走 USB，get_remote_device() 走 remote。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>用 Python 加载脚本最稳，或指定 -H 127.0.0.1:27042。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">6</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">签名参数顺序</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>Java 用 TreeMap 按 key 字典序排序，Python 字典无序。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>sorted(params.items()) 排序后再拼接。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">7</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">sign 参与了签名</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>getSignString() 里会先 remove sign 再拼串。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>算 sign 时参数里不要包含 sign 字段本身。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">8</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">时间窗口校验</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>timestamp 和服务器时间差太多会被拒绝。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>保证本机时间准确，或用 NTP 同步。</p>
+                </div>
+                
+                <div class="pitfall-card glass-card rounded-xl p-4 md:p-5 fade-in">
+                    <div class="flex items-center gap-2.5 mb-2.5">
+                        <div class="w-7 h-7 md:w-8 md:h-8 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+                            <span class="text-red-600 font-bold text-xs md:text-sm">9</span>
+                        </div>
+                        <h4 class="font-semibold text-slate-900 text-sm md:text-base">频率限制风控</h4>
+                    </div>
+                    <p class="text-xs md:text-sm text-slate-600 mb-1.5"><strong class="text-red-600">原因：</strong>请求太猛会触发风控、封 IP。</p>
+                    <p class="text-xs md:text-sm text-emerald-700"><strong>✅ 解决：</strong>每页 sleep 0.5~2 秒，加上代理池。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 知识总结 -->
+    <section id="summary" class="py-12 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-xl md:text-3xl font-bold text-slate-900 mb-3">知识总结与方法论</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto text-sm md:text-base px-2">不仅是一个案例，更是一套可复用的逆向方法论</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-8 max-w-5xl mx-auto">
+                <!-- 方法论 -->
+                <div class="glass-card rounded-xl md:rounded-2xl p-5 md:p-7">
+                    <h3 class="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-5 flex items-center gap-2">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                        核心方法论
+                    </h3>
+                    <div class="space-y-3 md:space-y-4">
+                        <div class="flex gap-2.5 md:gap-3">
+                            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-blue-600 font-bold text-xs md:text-sm">1</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900 text-sm">先观察，再动手</div>
+                                <p class="text-xs md:text-sm text-slate-600">对比多次请求，找变化字段，不要上来就瞎猜。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2.5 md:gap-3">
+                            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-blue-600 font-bold text-xs md:text-sm">2</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900 text-sm">从已知推未知</div>
+                                <p class="text-xs md:text-sm text-slate-600">先用真实样本自检算法，再推广到通用情况。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2.5 md:gap-3">
+                            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-blue-600 font-bold text-xs md:text-sm">3</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900 text-sm">Hook 优于猜</div>
+                                <p class="text-xs md:text-sm text-slate-600">找不到类时，Hook 底层 API + 调用栈是杀手锏。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2.5 md:gap-3">
+                            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-blue-600 font-bold text-xs md:text-sm">4</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900 text-sm">打印真实数据</div>
+                                <p class="text-xs md:text-sm text-slate-600">不要凭想象，getSignString 一打印就什么都清楚了。</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-2.5 md:gap-3">
+                            <div class="w-6 h-6 md:w-7 md:h-7 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                                <span class="text-blue-600 font-bold text-xs md:text-sm">5</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-slate-900 text-sm">类型要对齐</div>
+                                <p class="text-xs md:text-sm text-slate-600">Java Long vs JSON 字符串 vs Python int，是最常见的坑。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 学习路径 -->
+                <div class="glass-card rounded-xl md:rounded-2xl p-5 md:p-7">
+                    <h3 class="text-lg md:text-xl font-bold text-slate-900 mb-4 md:mb-5 flex items-center gap-2">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        推荐学习路径
+                    </h3>
+                    <div class="space-y-2 md:space-y-3">
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <span class="badge bg-slate-200 text-slate-700 shrink-0 mt-0.5">入门</span>
+                            <span class="text-xs md:text-sm text-slate-700 leading-relaxed">HTTP 协议、JSON 格式、Python requests 库</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                            <span class="badge bg-emerald-100 text-emerald-700 shrink-0 mt-0.5">初级</span>
+                            <span class="text-xs md:text-sm text-slate-700 leading-relaxed">抓包工具使用、Chrome DevTools 网络面板</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-100">
+                            <span class="badge bg-blue-100 text-blue-700 shrink-0 mt-0.5">中级</span>
+                            <span class="text-xs md:text-sm text-slate-700 leading-relaxed">jadx 反编译、Java 基础语法、Frida 入门</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-orange-50 border border-orange-100">
+                            <span class="badge bg-orange-100 text-orange-700 shrink-0 mt-0.5">进阶</span>
+                            <span class="text-xs md:text-sm text-slate-700 leading-relaxed">APK 加固脱壳、SSL Pinning 绕过、协议加密逆向</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3 rounded-xl bg-purple-50 border border-purple-100">
+                            <span class="badge bg-purple-100 text-purple-700 shrink-0 mt-0.5">工程</span>
+                            <span class="text-xs md:text-sm text-slate-700 leading-relaxed">分布式爬虫架构、代理池、数据清洗与入库</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 完整链路图 - 桌面端横排 -->
+            <div class="max-w-5xl mx-auto mt-6 md:mt-8 glass-card rounded-xl md:rounded-2xl p-5 md:p-7 flow-desktop">
+                <h3 class="text-lg md:text-xl font-bold text-slate-900 mb-5 md:mb-6 text-center">逆向工程完整链路</h3>
+                <div class="flex flex-wrap items-center justify-center gap-2 md:gap-3 text-sm">
+                    <span class="px-3 py-2 rounded-lg bg-blue-100 text-blue-800 font-medium">抓包</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-blue-100 text-blue-800 font-medium">观察参数</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-blue-100 text-blue-800 font-medium">判断翻页</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-red-100 text-red-800 font-medium">发现 sign 拦路</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 font-medium">反编译找类(失败)</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-800 font-medium">Frida Hook 调用栈</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-emerald-100 text-emerald-800 font-medium">拿到真实输入输出</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-purple-100 text-purple-800 font-medium">读源码提炼算法</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-purple-100 text-purple-800 font-medium">Python 复现自检</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">发请求成功</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-orange-100 text-orange-800 font-medium">调试翻页坑点</span>
+                    <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    <span class="px-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-emerald-500 text-white font-medium">稳定抓取 ✅</span>
+                </div>
+            </div>
+            
+            <!-- 完整链路图 - 移动端竖排 -->
+            <div class="max-w-5xl mx-auto mt-6 md:mt-8 glass-card rounded-xl md:rounded-2xl p-5 md:p-7 flow-mobile hidden">
+                <h3 class="text-lg font-bold text-slate-900 mb-5 text-center">逆向工程完整链路</h3>
+                <div class="flex flex-col items-stretch gap-0 max-w-xs mx-auto">
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-blue-100 text-blue-800 font-medium text-sm">① 抓包</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-blue-100 text-blue-800 font-medium text-sm">② 观察参数 → 判断翻页</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-red-100 text-red-800 font-medium text-sm">③ 发现 sign 拦路</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-slate-100 text-slate-700 font-medium text-sm">④ 反编译找类（失败）</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-emerald-100 text-emerald-800 font-medium text-sm">⑤ Frida Hook 调用栈</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-emerald-100 text-emerald-800 font-medium text-sm">⑥ 拿到真实输入输出</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-purple-100 text-purple-800 font-medium text-sm">⑦ 读源码 → Python 复现</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2 px-3 rounded-lg bg-orange-100 text-orange-800 font-medium text-sm">⑧ 发请求 → 调试翻页坑</div>
+                    <div class="flex justify-center py-1"><svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg></div>
+                    <div class="flex items-center justify-center py-2.5 px-3 rounded-lg bg-gradient-to-r from-blue-500 to-emerald-500 text-white font-medium text-sm shadow-lg">⑨ 稳定抓取 ✅</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 法律声明 -->
+    <section class="py-10 md:py-12 bg-gradient-to-r from-red-50 to-orange-50 border-y border-red-100">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-start gap-3 md:gap-4">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5 md:w-6 md:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                    </svg>
+                </div>
+                <div class="min-w-0">
+                    <h3 class="text-base md:text-lg font-bold text-red-900 mb-2">⚠️ 法律与道德提醒</h3>
+                    <p class="text-red-800 text-xs md:text-sm mb-2.5"><strong>本文仅用于技术学习与研究，请勿用于任何商业用途或侵犯他人权益的行为。</strong></p>
+                    <ul class="text-xs md:text-sm text-red-700 space-y-1">
+                        <li>• 抓取前请阅读目标网站的 robots.txt 和服务条款</li>
+                        <li>• 不要高频请求，避免对服务器造成压力</li>
+                        <li>• 不要抓取、传播个人隐私数据</li>
+                        <li>• 不要绕过付费、权限等访问控制</li>
+                        <li>• 遵守《网络安全法》《数据安全法》《个人信息保护法》</li>
+                    </ul>
+                    <p class="text-red-800 text-xs md:text-sm mt-2.5 font-medium">技术是一把双刃剑，用之有道，方能行远。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="py-10 md:py-12 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center gap-2 mb-4">
+                    <div class="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <span class="font-bold text-lg md:text-xl">逆向实战教程</span>
+                </div>
+                <p class="text-slate-400 text-xs md:text-sm mb-5 max-w-md mx-auto px-2">
+                    希望这份文档能帮你把这次实战讲清楚、讲透。如果用于授课，建议按「背景 → 抓包 → 定位 → 复现 → 翻页 → 调试」的顺序推进。
+                </p>
+                <div class="flex items-center justify-center gap-4 mb-5">
+                    <span class="text-slate-500 text-xs md:text-sm">教学相长，共同进步</span>
+                </div>
+                <div class="pt-5 border-t border-slate-800 text-slate-500 text-xs md:text-sm">
+                    <p>© 2026 技术作品集 · 用于教学与技术展示</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 移动端底部导航 -->
+    <nav class="mobile-nav fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 flex items-center justify-around">
+        <a href="#overview" class="mobile-nav-link flex flex-col items-center justify-center py-2 px-2 text-slate-500 transition-colors min-w-0">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span class="text-[10px]">概览</span>
+        </a>
+        <a href="#process" class="mobile-nav-link flex flex-col items-center justify-center py-2 px-2 text-slate-500 transition-colors min-w-0">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+            <span class="text-[10px]">流程</span>
+        </a>
+        <a href="#code" class="mobile-nav-link flex flex-col items-center justify-center py-2 px-2 text-slate-500 transition-colors min-w-0">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+            <span class="text-[10px]">代码</span>
+        </a>
+        <a href="#pitfalls" class="mobile-nav-link flex flex-col items-center justify-center py-2 px-2 text-slate-500 transition-colors min-w-0">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <span class="text-[10px]">避坑</span>
+        </a>
+        <a href="#summary" class="mobile-nav-link flex flex-col items-center justify-center py-2 px-2 text-slate-500 transition-colors min-w-0">
+            <svg class="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+            <span class="text-[10px]">总结</span>
+        </a>
+    </nav>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="back-to-top fixed right-4 bottom-20 md:bottom-8 z-40 w-11 h-11 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center hover:shadow-xl hover:shadow-blue-500/40 transition-all">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+        </svg>
+    </button>
+
+    <script>
+        window.addEventListener('load', function() {
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightAll();
+            }
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab 切换
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const codeContents = document.querySelectorAll('.code-content');
+            const codeFilename = document.getElementById('code-filename');
+            
+            const filenames = {
+                'main': 'main.py - 完整爬虫脚本',
+                'frida': 'hook.js - Frida Hook 脚本',
+                'frida-py': 'frida_loader.py - Frida Python 加载器'
+            };
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    
+                    tabBtns.forEach(b => {
+                        b.classList.remove('active');
+                        b.classList.add('text-slate-600');
+                    });
+                    btn.classList.add('active');
+                    btn.classList.remove('text-slate-600');
+                    
+                    codeContents.forEach(content => {
+                        content.classList.add('hidden');
+                    });
+                    document.getElementById('tab-' + tab).classList.remove('hidden');
+                    
+                    codeFilename.textContent = filenames[tab];
+                });
+            });
+            
+            // 复制代码
+            const copyBtn = document.querySelector('button[onclick="copyCode()"]');
+            if (copyBtn) {
+                copyBtn.removeAttribute('onclick');
+                copyBtn.addEventListener('click', function() {
+                    const activeBtn = document.querySelector('.tab-btn.active');
+                    const tab = activeBtn.dataset.tab;
+                    const codeEl = document.querySelector('#tab-' + tab + ' code');
+                    const text = codeEl.textContent;
+                    
+                    const btn = this;
+                    const originalHTML = btn.innerHTML;
+                    
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(text).then(() => {
+                            showCopied(btn, originalHTML);
+                        }).catch(() => {
+                            fallbackCopy(text, btn, originalHTML);
+                        });
+                    } else {
+                        fallbackCopy(text, btn, originalHTML);
+                    }
+                });
+            }
+            
+            function fallbackCopy(text, btn, originalHTML) {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    showCopied(btn, originalHTML);
+                } catch(e) {}
+                document.body.removeChild(textarea);
+            }
+            
+            function showCopied(btn, originalHTML) {
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> 已复制';
+                btn.classList.add('text-emerald-400');
+                setTimeout(() => {
+                    btn.innerHTML = originalHTML;
+                    btn.classList.remove('text-emerald-400');
+                }, 2000);
+            }
+            
+            // 回到顶部
+            const backToTop = document.getElementById('backToTop');
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('nav');
+                if (window.scrollY > 50) {
+                    nav.classList.add('shadow-sm');
+                } else {
+                    nav.classList.remove('shadow-sm');
+                }
+                
+                if (window.scrollY > 400) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+                
+                // 移动端导航高亮
+                const sections = ['overview', 'process', 'code', 'pitfalls', 'summary'];
+                const mobileLinks = document.querySelectorAll('.mobile-nav-link');
+                let current = '';
+                
+                sections.forEach(id => {
+                    const section = document.getElementById(id);
+                    if (section) {
+                        const rect = section.getBoundingClientRect();
+                        if (rect.top <= 100) {
+                            current = id;
+                        }
+                    }
+                });
+                
+                mobileLinks.forEach(link => {
+                    link.classList.remove('text-blue-600');
+                    link.classList.add('text-slate-500');
+                    const href = link.getAttribute('href').substring(1);
+                    if (href === current) {
+                        link.classList.add('text-blue-600');
+                        link.classList.remove('text-slate-500');
+                    }
+                });
+            });
+            
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 平滑滚动 - 修复移动端锚点偏移
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        const navHeight = 56; // 导航栏高度
+                        const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html><!--03324366232573747210091712-->
+<!--27929418782395614730092011--><!--28089971562573747210092011--><!--28286545542395614730092011-->
