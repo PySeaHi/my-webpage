@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>医脉通药品说明书密文解密实战 | HaleShi 教学案例</title>
+    <title>某mai通药品说明书密文解密实战（V529版本） | HaleShi 教学案例</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -216,7 +216,7 @@
                 
                 <!-- 标题 -->
                 <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-4">
-                    <span class="bg-gradient-to-r from-primary via-secondary to-accent text-gradient">医脉通药品说明书</span>
+                    <span class="bg-gradient-to-r from-primary via-secondary to-accent text-gradient">某mai通药品说明书</span>
                     <br>密文解密全流程实战
                 </h1>
                 
@@ -296,7 +296,7 @@
             
             <div class="glass rounded-2xl p-6 md:p-8 border border-gray-700/50 mb-8">
                 <p class="text-gray-300 leading-relaxed mb-6">
-                    在对医脉通「用药参考」APK（v529版本）进行抓包分析时，药品分类接口返回的是Base64编码的AES加密密文，无法直接获取结构化的药品数据。本案例将完整演示如何通过逆向分析定位解密逻辑、提取密钥与IV、最终用Python还原解密算法。
+                    在对某mai通「用药参考」APK（v529版本）进行抓包分析时，药品分类接口返回的是Base64编码的AES加密密文，无法直接获取结构化的药品数据。本案例将完整演示如何通过逆向分析定位解密逻辑、提取密钥与IV、最终用Python还原解密算法。
                 </p>
 
                 <div class="bg-dark/50 rounded-xl p-4 border border-gray-700/30">
@@ -560,7 +560,7 @@ uAMdR6P5VEOav63MMbDM2ckVV5+q4NdgVZP8O8Tqt+68fNrEGHRfXduXapw8+lneFRP1SVXF/sG3druR
                         </button>
                     </div>
                     <pre><code class="language-python">"""
-医脉通用药参考 APP 接口响应解密
+某mai通用药参考 APP 接口响应解密
 还原 getListDrugCateLastPreparation Java 逻辑
 """
 import base64
