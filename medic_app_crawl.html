@@ -316,6 +316,95 @@
                 display: block;
             }
         }
+
+        /* 作者署名 */
+        .author-credit {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 14px 7px 8px;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            box-shadow:
+                0 8px 24px rgba(37, 99, 235, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease,
+                border-color 0.25s ease;
+        }
+
+        .author-credit:hover {
+            transform: translateY(-2px);
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow:
+                0 12px 30px rgba(37, 99, 235, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        }
+
+        .author-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            border-radius: 50%;
+            color: white;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            box-shadow:
+                0 4px 10px rgba(37, 99, 235, 0.28),
+                inset 0 1px 1px rgba(255, 255, 255, 0.35);
+        }
+
+        .author-label {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        .author-name {
+            display: block;
+            margin-top: 2px;
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        @media (max-width: 640px) {
+            .author-credit {
+                gap: 8px;
+                padding-right: 12px;
+            }
+
+            .author-avatar {
+                width: 28px;
+                height: 28px;
+                flex-basis: 28px;
+            }
+
+            .author-name {
+                font-size: 13px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .author-credit {
+                transition: none;
+            }
+
+            .author-credit:hover {
+                transform: none;
+            }
+        }
     </style>
 </head>
 <body class="text-slate-800 pb-20 md:pb-0">
@@ -373,16 +462,31 @@
                     <span class="block section-title mt-1">某医生 APP 逆向抓取</span>
                 </h1>
                 <!-- 作者署名 -->
-            <div class="flex items-center justify-center gap-3 mb-8">
-                <div class="h-px w-12 bg-gradient-to-r from-transparent to-primary/60"></div>
-                <div class="flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-primary/20">
-                    <div class="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                        <i class="fa fa-user text-white text-xs"></i>
+                <div class="flex justify-center mb-8 fade-in" style="animation-delay: 0.25s">
+                    <div class="author-credit" aria-label="作者：HaleShi">
+                        <div class="author-avatar" aria-hidden="true">HS</div>
+
+                        <div class="text-left">
+                            <span class="author-label">作者</span>
+                            <span class="author-name">HaleShi</span>
+                        </div>
+
+                        <svg
+                            class="w-4 h-4 ml-1 text-blue-500"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                            />
+                        </svg>
                     </div>
-                    <span class="text-sm font-medium text-slate-200">作者：<span class="text-gradient font-semibold">HaleShi</span></span>
                 </div>
-                <div class="h-px w-12 bg-gradient-to-l from-transparent to-primary/60"></div>
-            </div>
                 
                 <p class="text-sm sm:text-base md:text-lg text-slate-600 leading-relaxed mb-7 max-w-2xl mx-auto px-2 fade-in" style="animation-delay: 0.3s">
                     完整记录从「抓包看到参数」到「用 Python 成功翻页抓取」的全过程。由浅入深，适合小白、初学者、中级技术员阅读，也可作为逆向/爬虫/安全方向的教学案例。
