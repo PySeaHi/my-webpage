@@ -1,1590 +1,1804 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>APP逆向工程核心技术：抓包、参数分析与防护绕过 | HaleShi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.5.0/mermaid.min.js"></script>
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-light: #6366f1;
+      --primary-dark: #3730a3;
+      --accent: #06b6d4;
+      --accent2: #ec4899;
+      --accent3: #f59e0b;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --bg: #f8fafc;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+    }
 
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP逆向工程技术详解：抓包、参数分析与防护绕过</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.5.0/mermaid.min.js"></script>
-    <style>
-        :root {
-            --primary: #1e3a5f;
-            --secondary: #2c5282;
-            --accent: #4299e1;
-            --text-primary: #2d3748;
-            --text-secondary: #4a5568;
-            --bg-primary: #ffffff;
-            --bg-secondary: #f7fafc;
-            --border: #e2e8f0;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            color: var(--text-primary);
-            background-color: var(--bg-primary);
-        }
-        
-        .serif {
-            font-family: 'Playfair Display', serif;
-        }
-        
-        .toc-fixed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
-            height: 100vh;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            overflow-y: auto;
-            z-index: 1000;
-            padding: 2rem 1.5rem;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
-        }
-        
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-        }
-        
-        .hero-section {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .hero-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            align-items: center;
-            min-height: 70vh;
-        }
-        
-        .hero-title {
-            font-size: 3.5rem;
-            font-weight: 700;
-            line-height: 1.1;
-            margin-bottom: 1.5rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .hero-subtitle {
-            font-size: 1.25rem;
-            color: var(--text-secondary);
-            font-style: italic;
-            margin-bottom: 2rem;
-        }
-        
-        .hero-highlights {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-        
-        .highlight-card {
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 12px;
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .highlight-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        
-        .section-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            color: var(--primary);
-            border-bottom: 3px solid var(--accent);
-            padding-bottom: 0.5rem;
-        }
-        
-        .subsection-title {
-            font-size: 1.75rem;
-            font-weight: 600;
-            margin: 2rem 0 1rem 0;
-            color: var(--secondary);
-        }
-        
-        .content-block {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-        }
-        
-        .method-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--accent);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .table-container {
-            overflow-x: auto;
-            margin: 2rem 0;
-        }
-        
-        .custom-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .custom-table th {
-            background: var(--primary);
-            color: white;
-            padding: 1rem;
-            text-align: left;
-            font-weight: 600;
-        }
-        
-        .custom-table td {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            vertical-align: top;
-        }
-        
-        .custom-table tr:nth-child(even) {
-            background: var(--bg-secondary);
-        }
-        
-        .citation {
-            display: inline-block;
-            background: var(--accent);
-            color: white;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.8rem;
-            text-decoration: none;
-            margin: 0 0.2rem;
-            transition: background 0.3s ease;
-        }
-        
-        .citation:hover {
-            background: var(--secondary);
-            color: white;
-        }
-        
-        .toc-link {
-            display: block;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            transition: color 0.3s ease;
-        }
-        
-        .toc-link:hover, .toc-link.active {
-            color: white;
-            background: rgba(255,255,255,0.1);
-            padding-left: 0.5rem;
-            border-radius: 4px;
-        }
-        
-        .toc-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-        }
-        
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-        
-        .tech-card {
-            background: white;
-            border-radius: 8px;
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-            transition: transform 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .tech-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: var(--accent);
-            transition: width 0.3s ease;
-        }
-        
-        .tech-card:hover::before {
-            width: 8px;
-        }
-        
-        .tech-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-        }
-        
-        @media (max-width: 1024px) {
-            .toc-fixed {
-                display: none;
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .hero-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+    * { -webkit-tap-highlight-color: transparent; }
 
-        /* Responsive adjustments for small screens */
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-            .hero-highlights {
-                grid-template-columns: 1fr;
-            }
-            .px-8 {
-                padding-left: 1rem;
-                padding-right: 1rem;
-            }
-            .mermaid-control-btn:not(.reset-zoom) {
-                display: none;
-            }
-            .mermaid-controls {
-                top: auto;
-                bottom: 15px;
-                right: 15px;
-            }
-        }
-        
-        .pull-quote {
-            font-size: 1.25rem;
-            font-style: italic;
-            color: var(--secondary);
-            border-left: 4px solid var(--accent);
-            padding-left: 1.5rem;
-            margin: 2rem 0;
-            background: rgba(66, 153, 225, 0.05);
-            padding: 1.5rem;
-            border-radius: 8px;
-        }
-        
-        .code-block {
-            background: #282c34;
-            color: #abb2bf;
-            padding: 1.5rem;
-            border-radius: 8px;
-            font-family: 'Fira Code', monospace;
-            font-size: 0.9rem;
-            overflow-x: auto;
-            margin: 1.5rem 0;
-        }
-        
-        /* Mermaid diagram styling */
-        .mermaid-container {
-            display: flex;
-            justify-content: center;
-            min-height: 300px;
-            max-height: 800px;
-            background: #ffffff;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 30px;
-            margin: 30px 0;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-            position: relative;
-            overflow: hidden;
-        }
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
 
-        .mermaid-container .mermaid {
-            width: 100%;
-            max-width: 100%;
-            height: 100%;
-            cursor: grab;
-            transition: transform 0.3s ease;
-            transform-origin: center center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            touch-action: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+      color: var(--text-primary);
+      background: var(--bg);
+      line-height: 1.7;
+    }
 
-        .mermaid-container .mermaid svg {
-            max-width: 100%;
-            height: 100%;
-            display: block;
-            margin: 0 auto;
-        }
+    /* ===== 阅读进度条 ===== */
+    .reading-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #06b6d4, #4f46e5, #ec4899);
+      z-index: 9999;
+      width: 0%;
+      transition: width 0.1s ease-out;
+    }
 
-        .mermaid-container .mermaid:active {
-            cursor: grabbing;
-        }
+    /* ===== 顶部导航 ===== */
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(226,232,240,0.7);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: 0 1.5rem;
+    }
+    .top-nav .nav-brand {
+      font-weight: 700;
+      font-size: 1.1rem;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .top-nav .nav-links {
+      display: flex;
+      gap: 0.25rem;
+      margin-left: 2rem;
+    }
+    .top-nav .nav-links a {
+      padding: 0.4rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .top-nav .nav-links a:hover,
+    .top-nav .nav-links a.active {
+      background: rgba(79,70,229,0.08);
+      color: var(--primary);
+    }
+    @media (max-width: 900px) {
+      .top-nav .nav-links { display: none; }
+    }
 
-        .mermaid-container.zoomed .mermaid {
-            height: 100%;
-            width: 100%;
-            cursor: grab;
-        }
+    /* ===== Hero ===== */
+    .hero-section {
+      position: relative;
+      padding: 8rem 1.5rem 4rem;
+      overflow: hidden;
+      background: linear-gradient(135deg, #eef2ff 0%, #ecfeff 50%, #fdf2f8 100%);
+    }
+    .hero-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(79,70,229,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79,70,229,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+    }
+    .hero-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .hero-glow-1 { width: 400px; height: 400px; background: #6366f1; top: -100px; left: -100px; }
+    .hero-glow-2 { width: 350px; height: 350px; background: #06b6d4; bottom: -100px; right: -50px; }
+    .hero-glow-3 { width: 300px; height: 300px; background: #ec4899; top: 50%; left: 50%; transform: translate(-50%,-50%); opacity: 0.25; }
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border: 1px solid;
+      backdrop-filter: blur(10px);
+      background: rgba(255,255,255,0.6);
+    }
+    .hero-badge.blue { color: #4338ca; border-color: rgba(99,102,241,0.3); }
+    .hero-badge.cyan { color: #0e7490; border-color: rgba(6,182,212,0.3); }
+    .hero-badge.pink { color: #be185d; border-color: rgba(236,72,153,0.3); }
+    .hero-badge.amber { color: #b45309; border-color: rgba(245,158,11,0.3); }
 
-        .mermaid-controls {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            display: flex;
-            gap: 10px;
-            z-index: 20;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 8px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
+    .hero-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1rem;
+    }
+    .hero-subtitle {
+      font-size: clamp(1rem, 1.6vw, 1.25rem);
+      color: var(--text-secondary);
+      max-width: 720px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 2rem;
+    }
+    .hero-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
 
-        .mermaid-control-btn {
-            background: #ffffff;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            padding: 10px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            color: #374151;
-            font-size: 14px;
-            min-width: 36px;
-            height: 36px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    /* 作者署名徽章 */
+    .author-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem 0.5rem 0.5rem;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      border: 2px solid transparent;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)),
+        linear-gradient(135deg, #4f46e5, #06b6d4, #ec4899);
+      background-origin: border-box;
+      background-clip: padding-box, border-box;
+      backdrop-filter: blur(10px);
+      transition: transform 0.3s, box-shadow 0.3s;
+      cursor: default;
+      margin-bottom: 2rem;
+    }
+    .author-badge:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(79,70,229,0.2);
+    }
+    .author-avatar {
+      position: relative;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      font-size: 0.9rem;
+      background: conic-gradient(from 0deg, #4f46e5, #06b6d4, #ec4899, #f59e0b, #4f46e5);
+      animation: rotateHalo 8s linear infinite;
+    }
+    .author-avatar::before {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    }
+    .author-avatar span { position: relative; z-index: 1; }
+    .author-check {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 16px;
+      height: 16px;
+      background: #10b981;
+      border-radius: 50%;
+      border: 2px solid white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      color: white;
+      z-index: 2;
+    }
+    @keyframes rotateHalo {
+      to { transform: rotate(360deg); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .author-avatar { animation: none; }
+    }
+    .author-info { display: flex; flex-direction: column; line-height: 1.3; }
+    .author-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .author-name {
+      font-size: 1rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4, #ec4899);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
 
-        .mermaid-control-btn:hover {
-            background: #f8fafc;
-            border-color: #3b82f6;
-            color: #3b82f6;
-            transform: translateY(-1px);
-        }
+    /* KPI 卡 */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 2.5rem;
+    }
+    .kpi-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(226,232,240,0.8);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(79,70,229,0.12);
+    }
+    .kpi-value {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+    .kpi-label {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .kpi-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.75rem;
+      font-size: 1rem;
+    }
 
-        .mermaid-control-btn:active {
-            transform: scale(0.95);
-        }
-        
-        /* Enhanced mermaid styling for better contrast and unified appearance */
-        .mermaid svg {
-            max-width: 100% !important;
-            height: auto !important;
-            font-family: 'Inter', sans-serif !important;
-            background-color: white !important;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        }
-        
-        /* Node styling with better contrast for different colors */
-        .mermaid .node rect,
-        .mermaid .node circle,
-        .mermaid .node ellipse,
-        .mermaid .node polygon {
-            fill: white !important;
-            stroke: var(--primary) !important;
-            stroke-width: 2px !important;
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-        }
-        
-        /* Different node colors with proper contrast */
-        .mermaid .node:nth-child(4n+1) rect,
-        .mermaid .node:nth-child(4n+1) circle,
-        .mermaid .node:nth-child(4n+1) ellipse,
-        .mermaid .node:nth-child(4n+1) polygon {
-            fill: #e3f2fd !important;
-            stroke: #1976d2 !important;
-        }
-        
-        .mermaid .node:nth-child(4n+2) rect,
-        .mermaid .node:nth-child(4n+2) circle,
-        .mermaid .node:nth-child(4n+2) ellipse,
-        .mermaid .node:nth-child(4n+2) polygon {
-            fill: #f3e5f5 !important;
-            stroke: #7b1fa2 !important;
-        }
-        
-        .mermaid .node:nth-child(4n+3) rect,
-        .mermaid .node:nth-child(4n+3) circle,
-        .mermaid .node:nth-child(4n+3) ellipse,
-        .mermaid .node:nth-child(4n+3) polygon {
-            fill: #e8f5e8 !important;
-            stroke: #388e3c !important;
-        }
-        
-        .mermaid .node:nth-child(4n+4) rect,
-        .mermaid .node:nth-child(4n+4) circle,
-        .mermaid .node:nth-child(4n+4) ellipse,
-        .mermaid .node:nth-child(4n+4) polygon {
-            fill: #fff3e0 !important;
-            stroke: #f57c00 !important;
-        }
-        
-        /* Special styling for start/end nodes */
-        .mermaid .node:first-child rect,
-        .mermaid .node:first-child circle,
-        .mermaid .node:first-child ellipse,
-        .mermaid .node:first-child polygon,
-        .mermaid .node:last-child rect,
-        .mermaid .node:last-child circle,
-        .mermaid .node:last-child ellipse,
-        .mermaid .node:last-child polygon {
-            fill: #fce4ec !important;
-            stroke: #c2185b !important;
-        }
-        
-        /* Text styling with high contrast */
-        .mermaid .node .label,
-        .mermaid .nodeLabel {
-            color: var(--text-primary) !important;
-            font-weight: 600 !important;
-            font-size: 13px !important;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
-            line-height: 1.4;
-        }
-        
-        /* Edge styling */
-        .mermaid .edgePath .path {
-            stroke: var(--secondary) !important;
-            stroke-width: 2px !important;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
-        }
-        
-        .mermaid .edgeLabel {
-            background-color: white !important;
-            color: var(--text-primary) !important;
-            font-weight: 600 !important;
-            font-size: 12px !important;
-            padding: 6px 10px !important;
-            border-radius: 6px !important;
-            border: 1px solid var(--border) !important;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
-        }
-        
-        /* Decision node special styling */
-        .mermaid .node.decision rect,
-        .mermaid .node.decision polygon {
-            fill: #fff8e1 !important;
-            stroke: #ffa000 !important;
-            stroke-width: 2px !important;
-        }
-        
-        .mermaid .node.decision .label {
-            color: #e65100 !important;
-            font-weight: 700 !important;
-        }
-        
-        /* Cluster styling */
-        .mermaid .cluster rect {
-            fill: rgba(66, 153, 225, 0.05) !important;
-            stroke: var(--accent) !important;
-            stroke-width: 1px !important;
-            stroke-dasharray: 5,5 !important;
-        }
-        
-        .mermaid .cluster .label {
-            color: var(--secondary) !important;
-            font-weight: 700 !important;
-            font-size: 14px !important;
-        }
-        
-        /* Timeline specific styling */
-        .mermaid .section {
-            fill: var(--accent) !important;
-            opacity: 0.2 !important;
-        }
-        
-        .mermaid .section0, .mermaid .section1, .mermaid .section2, .mermaid .section3 {
-            fill-opacity: 0.2 !important;
-        }
-        
-        .mermaid .cScale0 {
-            fill: #e3f2fd !important;
-        }
-        
-        .mermaid .cScale1 {
-            fill: #f3e5f5 !important;
-        }
-        
-        .mermaid .cScale2 {
-            fill: #e8f5e8 !important;
-        }
-        
-        .mermaid .cScale3 {
-            fill: #fff3e0 !important;
-        }
-    </style>
-  </head>
+    /* ===== 主内容 ===== */
+    .main-content {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+    }
+    @media (min-width: 1024px) {
+      .main-content { padding: 4rem 2rem 6rem; }
+    }
 
-  <body>
-    <!-- Fixed Table of Contents -->
-    <nav class="toc-fixed">
-      <div class="toc-title">目录导航</div>
-      <a href="#introduction" class="toc-link">引言</a>
-      <a href="#packet-capture" class="toc-link">抓包技术</a>
-      <a href="#system-proxy" class="toc-link">• 系统代理抓包</a>
-      <a href="#client-certificate" class="toc-link">• 客户端证书校验绕过</a>
-      <a href="#server-certificate" class="toc-link">• 服务端证书校验绕过</a>
-      <a href="#tcp-capture" class="toc-link">• TCP协议抓包</a>
-      <a href="#quic-capture" class="toc-link">• QUIC协议抓包</a>
-      <a href="#parameter-analysis" class="toc-link">参数逆向分析</a>
-      <a href="#java-decompilation" class="toc-link">• Java层反编译</a>
-      <a href="#native-decompilation" class="toc-link">• Native层反编译</a>
-      <a href="#frida-application" class="toc-link">• Frida动态分析</a>
-      <a href="#xposed-framework" class="toc-link">• Xposed框架应用</a>
-      <a href="#security-bypass" class="toc-link">防护绕过</a>
-      <a href="#detection-bypass" class="toc-link">• 检测机制绕过</a>
-      <a href="#unpacking" class="toc-link">• 加壳与脱壳</a>
-      <a href="#frida-unpacking" class="toc-link">• Frida动态脱壳</a>
-      <a href="#aosp-customization" class="toc-link">• AOSP定制系统</a>
-    </nav>
+    /* 章节标题 */
+    .chapter-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin: 3rem 0 1.5rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--border);
+      position: relative;
+    }
+    .chapter-title::before {
+      content: '';
+      width: 5px;
+      height: 28px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      flex-shrink: 0;
+    }
+    .chapter-title .ch-num {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.65rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(79,70,229,0.1), rgba(6,182,212,0.1));
+      color: var(--primary);
+      margin-left: auto;
+    }
+    .section-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 2.5rem 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-title::before {
+      content: '';
+      width: 3px;
+      height: 20px;
+      border-radius: 2px;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
 
-    <!-- Main Content -->
-    <main class="main-content">
-      <!-- Hero Section -->
-      <section class="hero-section">
-        <div class="container mx-auto px-8 py-16">
-          <div class="hero-grid">
-            <div>
-              	<h1 class="hero-title serif">APP逆向工程核心技术</h1>
-              	<p class="hero-subtitle">深度解析抓包、参数分析与防护绕过的完整技术体系</p>
-		<!-- 标签组（逆向分析、安全研究、数据采集） -->
-		<div class="flex flex-wrap gap-2">
-		  <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">逆向分析</span>
-		  <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">安全研究</span>
-		  <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">数据采集</span>
-		</div>
-		<!-- 信息组（日期、类型、作者） -->
-		<div class="mt-4 flex flex-wrap gap-2 text-xs text-slate-600">
-		  <span class="flex items-center"><i class="fas fa-calendar-alt text-xs mr-1"></i>2025年7月</span>
-		  <span class="flex items-center"><i class="fas fa-book text-xs mr-1"></i>结构化学习报告</span>
-		  <span class="flex items-center"><i class="fas fa-user-edit text-xs mr-1"></i>Hale Shi</span>
-		</div>
-            </div>
-            <div class="hero-highlights">
-              <div class="highlight-card">
-                <i class="fas fa-network-wired text-2xl text-blue-600 mb-3"></i>
-                <h3 class="font-semibold mb-2">网络抓包</h3>
-                <p class="text-sm text-gray-600">全面覆盖HTTP/HTTPS、TCP、QUIC等协议的抓包技术</p>
-              </div>
-              <div class="highlight-card">
-                <i class="fas fa-code text-2xl text-green-600 mb-3"></i>
-                <h3 class="font-semibold mb-2">代码逆向</h3>
-                <p class="text-sm text-gray-600">Java与Native层的静态分析与动态调试技术</p>
-              </div>
-              <div class="highlight-card">
-                <i class="fas fa-shield-alt text-2xl text-purple-600 mb-3"></i>
-                <h3 class="font-semibold mb-2">安全防护</h3>
-                <p class="text-sm text-gray-600">证书校验、Root检测、加壳等防护机制的绕过方法</p>
-              </div>
-              <div class="highlight-card">
-                <i class="fas fa-tools text-2xl text-red-600 mb-3"></i>
-                <h3 class="font-semibold mb-2">工具实战</h3>
-                <p class="text-sm text-gray-600">Frida、Xposed、IDA Pro等工具的高级应用技巧</p>
-              </div>
-            </div>
+    /* 内容卡片 */
+    .content-card {
+      background: var(--bg-card);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .content-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent), var(--accent2));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .content-card:hover {
+      box-shadow: 0 8px 30px rgba(15,23,42,0.08);
+    }
+    .content-card:hover::before { opacity: 1; }
+    @media (max-width: 640px) {
+      .content-card { padding: 1.25rem; border-radius: 16px; }
+    }
+
+    /* 提示框 */
+    .callout {
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      margin: 1.25rem 0;
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .callout-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+    }
+    .callout.info {
+      background: linear-gradient(135deg, rgba(79,70,229,0.06), rgba(6,182,212,0.06));
+      border-left: 4px solid var(--primary);
+      color: var(--text-primary);
+    }
+    .callout.info .callout-icon { background: rgba(79,70,229,0.12); color: var(--primary); }
+    .callout.warning {
+      background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(239,68,68,0.05));
+      border-left: 4px solid var(--accent3);
+      color: var(--text-primary);
+    }
+    .callout.warning .callout-icon { background: rgba(245,158,11,0.15); color: var(--accent3); }
+    .callout.tip {
+      background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(6,182,212,0.06));
+      border-left: 4px solid #10b981;
+    }
+    .callout.tip .callout-icon { background: rgba(16,185,129,0.12); color: #10b981; }
+    .callout.quote {
+      background: linear-gradient(135deg, rgba(236,72,153,0.05), rgba(139,92,246,0.05));
+      border-left: 4px solid var(--accent2);
+      font-style: italic;
+      color: var(--text-secondary);
+    }
+    .callout.quote .callout-icon { background: rgba(236,72,153,0.12); color: var(--accent2); }
+
+    /* 网格卡片 */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin: 1.25rem 0;
+    }
+    .info-card {
+      background: linear-gradient(135deg, #f8fafc, #ffffff);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      transition: all 0.3s;
+      position: relative;
+    }
+    .info-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      border-radius: 14px 0 0 14px;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      opacity: 0.7;
+      transition: width 0.3s;
+    }
+    .info-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(15,23,42,0.08);
+      border-color: rgba(79,70,229,0.25);
+    }
+    .info-card h4 {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .info-card h4 i { color: var(--primary); }
+    .info-card ul { list-style: none; padding: 0; margin: 0; }
+    .info-card li {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      padding: 0.3rem 0;
+      padding-left: 1.2rem;
+      position: relative;
+      line-height: 1.6;
+    }
+    .info-card li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-weight: bold;
+    }
+    .info-card ol {
+      margin: 0;
+      padding-left: 1.25rem;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    /* 代码块 */
+    .code-wrapper {
+      position: relative;
+      margin: 1.25rem 0;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #282c34;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      background: #21252b;
+      border-bottom: 1px solid #333842;
+    }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .code-dots span:nth-child(1) { background: #ff5f56; }
+    .code-dots span:nth-child(2) { background: #ffbd2e; }
+    .code-dots span:nth-child(3) { background: #27c93f; }
+    .code-lang {
+      font-size: 0.75rem;
+      color: #7f848e;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.08);
+      border: none;
+      color: #abb2bf;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(99,102,241,0.25); color: #c7d2fe; }
+    .copy-btn.copied { background: rgba(16,185,129,0.25); color: #6ee7b7; }
+    .code-wrapper pre {
+      margin: 0;
+      padding: 1.25rem 1.5rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+      line-height: 1.7;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+    }
+    .code-wrapper pre::-webkit-scrollbar { height: 6px; }
+    .code-wrapper pre::-webkit-scrollbar-track { background: #282c34; }
+    .code-wrapper pre::-webkit-scrollbar-thumb { background: #4b5263; border-radius: 3px; }
+    .code-wrapper code {
+      background: transparent !important;
+      padding: 0 !important;
+      font-family: inherit;
+    }
+    .code-hint {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #7f848e;
+      padding: 0.35rem;
+      background: #21252b;
+      display: none;
+    }
+    @media (max-width: 640px) {
+      .code-wrapper pre { padding: 1rem; font-size: 0.8rem; }
+      .code-hint { display: block; }
+    }
+
+    /* 行内代码 */
+    p code, li code, td code {
+      background: rgba(79,70,229,0.08);
+      color: var(--primary-dark);
+      padding: 0.15rem 0.45rem;
+      border-radius: 5px;
+      font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
+      font-size: 0.88em;
+      word-break: break-all;
+    }
+
+    /* 表格 */
+    .table-wrapper {
+      margin: 1.25rem 0;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 10px rgba(15,23,42,0.04);
+      overflow-x: auto;
+      overflow-y: visible;
+      background: white;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      font-size: 0.9rem;
+      table-layout: auto;
+      min-width: 720px;
+      margin: 0;
+    }
+    table thead th {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    table tbody td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+    table tbody td:first-child {
+      white-space: nowrap;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    /* 针对不同列宽的表格优化 */
+    table.cols-4 tbody td:nth-child(2),
+    table.cols-4 tbody td:nth-child(3),
+    table.cols-4 tbody td:nth-child(4) {
+      min-width: 140px;
+    }
+    table tbody tr:nth-child(even) { background: #f8fafc; }
+    table tbody tr:hover { background: rgba(79,70,229,0.04); }
+    table tbody tr:last-child td { border-bottom: none; }
+    .table-caption {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: center;
+      margin: 0;
+      padding: 0.6rem 1rem 0.75rem;
+      font-style: italic;
+      width: 100%;
+      min-width: 720px;
+      white-space: nowrap;
+      display: block;
+      letter-spacing: 0.5px;
+      background: white;
+      box-sizing: border-box;
+    }
+
+    /* 引用标签 */
+    .citation {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 22px;
+      height: 20px;
+      padding: 0 6px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border-radius: 5px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-decoration: none;
+      margin: 0 2px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      vertical-align: super;
+      line-height: 1;
+    }
+    .citation:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(79,70,229,0.3);
+    }
+
+    /* Mermaid 图表 */
+    .mermaid-container {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      margin: 1.5rem 0;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(15,23,42,0.05);
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      transition: transform 0.2s;
+    }
+    .mermaid svg { max-width: 100% !important; height: auto !important; }
+    .mermaid-controls {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 6px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(10px);
+      padding: 6px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border: 1px solid var(--border);
+    }
+    .mermaid-control-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 7px;
+      border: none;
+      background: white;
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    .mermaid-control-btn:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-1px);
+    }
+    @media (max-width: 640px) {
+      .mermaid-container { padding: 1rem; }
+      .mermaid-control-btn:not(.reset-zoom) { display: none; }
+    }
+
+    /* 段落文本 */
+    .content-card p { color: var(--text-secondary); line-height: 1.8; margin-bottom: 1rem; }
+    .content-card p strong { color: var(--text-primary); font-weight: 600; }
+    h4.sub {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 1.5rem 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h4.sub i { color: var(--accent); }
+
+    /* ===== 页脚 ===== */
+    footer {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      color: white;
+      padding: 3rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    footer::before, footer::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      pointer-events: none;
+    }
+    footer::before { width: 300px; height: 300px; background: #4f46e5; top: -100px; left: -100px; }
+    footer::after { width: 250px; height: 250px; background: #06b6d4; bottom: -80px; right: -80px; }
+    .footer-inner {
+      position: relative;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .footer-brand {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #a5b4fc, #67e8f9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .footer-desc { color: #94a3b8; font-size: 0.9rem; margin-bottom: 1rem; }
+    .footer-copy { color: #64748b; font-size: 0.8rem; }
+
+    /* ===== 回到顶部 ===== */
+    .back-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: 0 8px 20px rgba(79,70,229,0.35);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s;
+      z-index: 999;
+    }
+    .back-top.show { opacity: 1; transform: translateY(0); }
+    .back-top:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(79,70,229,0.45); }
+    @media (max-width: 640px) {
+      .back-top { bottom: calc(70px + env(safe-area-inset-bottom)); right: 16px; width: 42px; height: 42px; }
+    }
+
+    /* ===== 移动端底部 Tab 导航 ===== */
+    .mobile-tab {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+      z-index: 998;
+      justify-content: space-around;
+    }
+    .mobile-tab a {
+      flex: 1;
+      text-align: center;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      padding: 0.35rem 0.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      transition: color 0.2s;
+    }
+    .mobile-tab a i { font-size: 1.05rem; }
+    .mobile-tab a.active { color: var(--primary); }
+    @media (max-width: 900px) {
+      .mobile-tab { display: flex; }
+      body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+    }
+
+    /* 滚动条美化 */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="reading-progress" id="progressBar"></div>
+
+  <!-- 顶部导航 -->
+  <nav class="top-nav">
+    <div class="nav-brand">
+      <i class="fas fa-shield-halved"></i>
+      <span>HaleShi · 逆向技术</span>
+    </div>
+    <div class="nav-links">
+      <a href="#introduction" class="active">引言</a>
+      <a href="#packet-capture">抓包技术</a>
+      <a href="#parameter-analysis">参数分析</a>
+      <a href="#security-bypass">防护绕过</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero-section">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-glow hero-glow-3"></div>
+    <div class="hero-inner">
+      <div class="hero-badges">
+        <span class="hero-badge blue"><i class="fas fa-bug"></i>逆向分析</span>
+        <span class="hero-badge cyan"><i class="fas fa-shield-halved"></i>安全研究</span>
+        <span class="hero-badge pink"><i class="fas fa-database"></i>数据采集</span>
+        <span class="hero-badge amber"><i class="fas fa-graduation-cap"></i>教学教程</span>
+      </div>
+
+      <h1 class="hero-title">APP逆向工程核心技术<br>抓包·参数分析·防护绕过</h1>
+      <p class="hero-subtitle">面向初中级安全人员与爬虫工程师的完整技术体系 —— 从网络抓包到静态反编译、从 Frida/Xposed 动态 Hook 到加壳脱壳、从 Root/Frida 检测到 AOSP 定制系统，覆盖逆向工程全链路。</p>
+
+      <!-- 作者署名徽章 -->
+      <div class="author-badge">
+        <div class="author-avatar">
+          <span>HS</span>
+          <div class="author-check"><i class="fas fa-check"></i></div>
+        </div>
+        <div class="author-info">
+          <span class="author-label">原创作者 · 技术分享</span>
+          <span class="author-name">HaleShi</span>
+        </div>
+      </div>
+
+      <div class="hero-meta">
+        <span><i class="far fa-calendar-alt"></i>2025 年 7 月</span>
+        <span><i class="far fa-file-alt"></i>结构化学习报告</span>
+        <span><i class="fas fa-clock"></i>约 30 分钟阅读</span>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(79,70,229,0.1);color:#4f46e5;"><i class="fas fa-network-wired"></i></div>
+          <div class="kpi-value" data-count="5">0</div>
+          <div class="kpi-label">抓包技术场景</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(6,182,212,0.1);color:#06b6d4;"><i class="fas fa-code"></i></div>
+          <div class="kpi-value" data-count="4">0</div>
+          <div class="kpi-label">逆向分析方法</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(236,72,153,0.1);color:#ec4899;"><i class="fas fa-lock-open"></i></div>
+          <div class="kpi-value" data-count="4">0</div>
+          <div class="kpi-label">防护绕过手段</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;"><i class="fas fa-toolbox"></i></div>
+          <div class="kpi-value" data-count="8">0</div>
+          <div class="kpi-label">核心实战工具</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 主内容 -->
+  <main class="main-content">
+
+    <!-- 引言 -->
+    <section id="introduction" class="content-card">
+      <h2 class="chapter-title">引言<span class="ch-num">写在前面</span></h2>
+      <p>
+        APP 逆向工程是一项系统性的技术，涉及<strong>网络通信分析、代码逆向还原、安全防护绕过</strong>等多个方面。本文面向初中级信息安全人员与爬虫工程师，提供一份结构化的 APP 逆向工程技术详解：内容涵盖抓包技术、参数逆向分析方法，以及 APP 安全防护与逆向突破策略。
+      </p>
+      <p>
+        通过掌握这些技术，你可以更深入地理解 APP 的运行机制，发现潜在的安全漏洞，或在合法授权范围内实现特定的数据采集与分析目标。
+      </p>
+      <div class="callout quote">
+        <div class="callout-icon"><i class="fas fa-quote-left"></i></div>
+        <div>在现代移动应用安全分析中，逆向工程技术不仅是理解应用行为的钥匙，更是发现安全漏洞、提升应用防护能力的重要工具。</div>
+      </div>
+    </section>
+
+    <!-- 1. 抓包技术 -->
+    <section id="packet-capture">
+      <h2 class="chapter-title">1. APP 网络通信抓包技术<span class="ch-num">Chapter 1</span></h2>
+
+      <!-- 1.1 系统代理 -->
+      <div id="system-proxy" class="content-card">
+        <h3 class="section-title"><i class="fas fa-ethernet"></i>1.1 系统代理抓包与配置</h3>
+        <p>
+          在 APP 逆向工程中，<strong>抓包是分析网络通信行为、理解数据交互逻辑的关键第一步</strong>。系统代理抓包是最基础也最常用的方式：通过将移动设备（如 Android 手机）的网络流量导向 PC 端的抓包工具（Charles / Fiddler / Burp Suite / mitmproxy 等），实现对 HTTP/HTTPS 等应用层协议的监控与分析。
+          <a href="https://juejin.cn/post/6874903020677791758" class="citation" target="_blank">3</a>
+          <a href="https://dead.blue/notes/2020/10/android-app-reverse-engineering-1/" class="citation" target="_blank">483</a>
+        </p>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-list-ol"></i>代理配置流程</h4>
+            <ul>
+              <li>在 PC 端设置抓包工具监听特定端口</li>
+              <li>移动设备 Wi-Fi 设置中配置代理服务器</li>
+              <li>安装抓包工具的 CA 证书到设备</li>
+              <li>验证 HTTPS 流量是否可正常捕获</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-user-secret"></i>常见代理检测绕过</h4>
+            <ul>
+              <li>使用 iptables 强制流量转发（透明代理）</li>
+              <li>修改 Smali 代码移除代理检测逻辑</li>
+              <li>使用 Drony / Postern 等透明代理工具</li>
+              <li>ProxyDroid 全局代理模式</li>
+            </ul>
           </div>
         </div>
-      </section>
-
-      <!-- Introduction -->
-      <section id="introduction" class="container mx-auto px-8 py-16">
-        <div class="content-block">
-          <h2 class="section-title serif">引言</h2>
-          <p class="text-lg leading-relaxed mb-6">
-            APP逆向工程是一项复杂的技术，涉及网络通信分析、代码逆向、安全防护绕过等多个方面。本文旨在为初中级信息安全人员和爬虫工程师提供一个关于APP逆向工程技术的详解，内容涵盖抓包技术、参数逆向分析方法以及APP安全防护与逆向突破策略。通过掌握这些技术，读者可以更深入地理解APP的运行机制，发现潜在的安全漏洞，或实现特定的数据采集与分析目标。
-          </p>
-
-          <div class="pull-quote">
-            "在现代移动应用安全分析中，逆向工程技术不仅是理解应用行为的钥匙，更是发现安全漏洞、提升应用防护能力的重要工具。"
+        <div class="code-wrapper">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">bash · iptables</span>
+            <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
           </div>
-        </div>
-      </section>
-
-      <!-- Packet Capture Section -->
-      <section id="packet-capture" class="container mx-auto px-8 py-8">
-        <h2 class="section-title serif">1. APP网络通信抓包技术</h2>
-
-        <!-- System Proxy Capture -->
-        <div id="system-proxy" class="content-block">
-          <h3 class="subsection-title serif">1.1 系统代理抓包与配置</h3>
-          <p class="mb-4">
-            在APP逆向工程中，<strong>抓包是分析网络通信行为、理解数据交互逻辑的关键步骤</strong>。系统代理抓包是最基础也是最常用的一种方式，通过将移动设备（如Android手机）的网络流量导向PC端的抓包工具（如Charles、Fiddler、Burp Suite、mitmproxy等），实现对HTTP/HTTPS等应用层协议的监控和分析。
-            <a href="https://juejin.cn/post/6874903020677791758" class="citation" target="_blank">[3]</a>
-            <a href="https://dead.blue/notes/2020/10/android-app-reverse-engineering-1/" class="citation" target="_blank">[483]</a>
-          </p>
-
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">代理配置流程</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• 在PC端设置抓包工具监听特定端口</li>
-                <li>• 移动设备Wi-Fi设置中配置代理服务器</li>
-                <li>• 安装抓包工具的CA证书</li>
-                <li>• 验证HTTPS流量是否可正常捕获</li>
-              </ul>
-            </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">常见代理检测绕过</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• 使用iptables强制流量转发</li>
-                <li>• 修改Smali代码移除代理检测</li>
-                <li>• 使用透明代理工具(Drony)</li>
-                <li>• ProxyDroid全局模式</li>
-              </ul>
-            </div>
-          </div>
-
-          <div class="code-block">
-            <pre># 使用iptables将特定APP流量转发到透明代理
+          <pre><code class="language-bash"># 使用 iptables 将特定 APP 流量转发到透明代理
 iptables -t nat -A OUTPUT -p tcp ! -d 127.0.0.1 \
   -m owner --uid-owner &lt;APP_UID&gt; --dport 0:65535 \
-  -j DNAT --to-destination 127.0.0.1:&lt;REDSOCKS_PORT&gt;</pre>
-          </div>
+  -j DNAT --to-destination 127.0.0.1:&lt;REDSOCKS_PORT&gt;</code></pre>
+          <div class="code-hint">← 左右滑动查看完整代码 · 右上角一键复制 →</div>
         </div>
+      </div>
 
-        <!-- Client Certificate Bypass -->
-        <div id="client-certificate" class="content-block">
-          <h3 class="subsection-title serif">1.2 客户端证书校验绕过方法</h3>
-          <p class="mb-4">
-            HTTPS协议通过SSL/TLS加密通信内容，保证了数据传输的安全性。然而，<strong>从Android 7.0 (Nougat) 开始，系统默认不再信任用户安装的CA证书，除非APP显式配置为信任用户证书</strong>。
-            <a href="https://www.wangsu.com/news/content/blog/3906" class="citation" target="_blank">[105]</a>
-            <a href="https://www.eet-china.com/mp/a163354.html" class="citation" target="_blank">[140]</a>
-          </p>
-
-          <div class="table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>方法类别</th>
-                  <th>具体方法</th>
-                  <th>描述</th>
-                  <th>适用场景/备注</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>证书管理</strong></td>
-                  <td>将抓包工具CA证书安装到系统信任区</td>
-                  <td>在已Root设备上，将CA证书复制到<code>/system/etc/security/cacerts/</code>并设置权限</td>
-                  <td>需要Root权限，适用于Android 7.0+</td>
-                </tr>
-                <tr>
-                  <td><strong>证书管理</strong></td>
-                  <td>修改APP的<code>network_security_config.xml</code>文件</td>
-                  <td>添加<code>&lt;trust-anchors&gt;</code>标签包含<code>&lt;certificates src="user" /&gt;</code></td>
-                  <td>需要反编译、修改APK并重打包签名</td>
-                </tr>
-                <tr>
-                  <td><strong>Hook框架</strong></td>
-                  <td>使用Xposed框架及其模块</td>
-                  <td>Hook APP中负责证书校验的API，使其直接返回验证成功</td>
-                  <td>需要安装Xposed框架，主要针对Java层校验</td>
-                </tr>
-                <tr>
-                  <td><strong>Hook框架</strong></td>
-                  <td>使用Frida进行Hook</td>
-                  <td>编写Frida脚本Hook SSL/TLS相关函数，强制其信任所有证书</td>
-                  <td>灵活，可应对Java层和部分Native层校验</td>
-                </tr>
-                <tr>
-                  <td><strong>环境/配置修改</strong></td>
-                  <td>降低Android系统版本或使用特定版本模拟器</td>
-                  <td>Android 7.0以下系统默认信任用户证书</td>
-                  <td>测试环境允许的情况下</td>
-                </tr>
-              </tbody>
-            </table>
-            <p class="text-sm text-gray-600 mt-2">Table 1: 客户端证书校验绕过方法总结</p>
-          </div>
+      <!-- 1.2 客户端证书校验绕过 -->
+      <div id="client-certificate" class="content-card">
+        <h3 class="section-title"><i class="fas fa-certificate"></i>1.2 客户端证书校验绕过方法</h3>
+        <p>
+          HTTPS 协议通过 SSL/TLS 加密通信内容，保证了数据传输的安全性。然而，<strong>从 Android 7.0（Nougat）开始，系统默认不再信任用户安装的 CA 证书</strong>，除非 APP 在 <code>network_security_config.xml</code> 中显式配置为信任用户证书。
+          <a href="https://www.wangsu.com/news/content/blog/3906" class="citation" target="_blank">105</a>
+          <a href="https://www.eet-china.com/mp/a163354.html" class="citation" target="_blank">140</a>
+        </p>
+        <div class="callout warning">
+          <div class="callout-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div>Android 7+ 的默认证书策略是最常见的"抓包看不到 HTTPS 内容"的原因。首次尝试抓包却只有 CONNECT 请求时，优先排查这一点。</div>
         </div>
-
-        <!-- Server Certificate Bypass -->
-        <div id="server-certificate" class="content-block">
-          <h3 class="subsection-title serif">1.3 服务端证书校验绕过技巧</h3>
-          <p class="mb-4">
-            服务端证书校验，通常指SSL Pinning（证书绑定），是一种增强HTTPS通信安全性的机制。在这种机制下，APP客户端不仅会校验服务端证书是否由受信任的CA签发，还会进一步校验服务端返回的证书是否与APP内置的特定证书完全一致。
-            <a href="https://blog.csdn.net/weixin_43845191/article/details/140968996" class="citation" target="_blank">[106]</a>
-            <a href="https://boogipop.com/2023/05/29/%5B%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95%5DFRIDA%20HOOK%EF%BC%9A%E8%84%B1%E5%A3%B3%E3%80%81%E6%89%8B%E6%9C%BA%E6%8A%93%E5%8C%85%E7%BB%95%E8%BF%87SSL/" class="citation" target="_blank">[144]</a>
-          </p>
-
-          <div class="pull-quote">
-            当APP启用了SSL Pinning后，使用Charles或Fiddler等工具抓包时，可能会遇到"SSL handshake with client failed"等错误提示，或者APP直接提示网络错误且无法获取数据。
-          </div>
+        <div class="table-wrapper">
+          <table class="cols-4">
+            <thead>
+              <tr>
+                <th>方法类别</th>
+                <th>具体方法</th>
+                <th>描述</th>
+                <th>适用场景</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>证书管理</strong></td>
+                <td>将 CA 证书安装到系统信任区</td>
+                <td>Root 设备上将 CA 证书复制到 <code>/system/etc/security/cacerts/</code> 并设置权限</td>
+                <td>需 Root，适用于 Android 7.0+</td>
+              </tr>
+              <tr>
+                <td><strong>证书管理</strong></td>
+                <td>修改 <code>network_security_config.xml</code></td>
+                <td>添加 <code>&lt;trust-anchors&gt;</code> 标签，包含 <code>&lt;certificates src="user"/&gt;</code></td>
+                <td>需反编译、重打包、重签名 APK</td>
+              </tr>
+              <tr>
+                <td><strong>Hook 框架</strong></td>
+                <td>使用 Xposed 模块</td>
+                <td>Hook APP 中负责证书校验的 API，使其直接返回验证成功</td>
+                <td>需安装 Xposed，主要针对 Java 层校验</td>
+              </tr>
+              <tr>
+                <td><strong>Hook 框架</strong></td>
+                <td>使用 Frida Hook</td>
+                <td>编写 Frida 脚本 Hook SSL/TLS 相关函数，强制信任所有证书</td>
+                <td>灵活，可应对 Java 层和部分 Native 层校验</td>
+              </tr>
+              <tr>
+                <td><strong>环境配置</strong></td>
+                <td>降低 Android 版本/特定模拟器</td>
+                <td>Android 7.0 以下系统默认信任用户证书</td>
+                <td>测试环境允许的情况下使用</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="table-caption">表 1 · 客户端证书校验绕过方法总结</p>
         </div>
+      </div>
 
-        <!-- TCP Capture -->
-        <div id="tcp-capture" class="content-block">
-          <h3 class="subsection-title serif">1.4 TCP协议抓包与分析</h3>
-          <p class="mb-4">
-            虽然HTTP/HTTPS是APP网络通信中最常见的协议，但许多APP，特别是对性能和实时性要求较高的应用（如游戏、即时通讯、音视频流等），可能会直接使用TCP或UDP等底层协议进行数据传输，或者基于这些协议封装自定义的应用层协议。
-            <a href="https://zhuanlan.zhihu.com/p/98955951" class="citation" target="_blank">[12]</a>
-          </p>
+      <!-- 1.3 服务端证书校验绕过 -->
+      <div id="server-certificate" class="content-card">
+        <h3 class="section-title"><i class="fas fa-fingerprint"></i>1.3 服务端证书校验绕过技巧（SSL Pinning）</h3>
+        <p>
+          服务端证书校验，通常指 <strong>SSL Pinning（证书绑定）</strong>：APP 客户端不仅校验服务端证书是否由受信任 CA 签发，还会进一步校验服务端返回的证书公钥/证书指纹是否与 APP 内置的特定值完全一致。
+          <a href="https://blog.csdn.net/weixin_43845191/article/details/140968996" class="citation" target="_blank">106</a>
+          <a href="https://boogipop.com/2023/05/29/" class="citation" target="_blank">144</a>
+        </p>
+        <div class="callout info">
+          <div class="callout-icon"><i class="fas fa-info-circle"></i></div>
+          <div>当 APP 启用了 SSL Pinning 后，使用 Charles/Fiddler 抓包往往会出现 <code>SSL handshake with client failed</code> 错误，或 APP 直接报错"网络异常"，此时必须绕过 Pinning 才能看到明文。</div>
+        </div>
+        <div class="callout tip">
+          <div class="callout-icon"><i class="fas fa-lightbulb"></i></div>
+          <div><strong>实战首选方案</strong>：使用 Frida + <code>objection</code>，一行命令 <code>android sslpinning disable</code> 即可绕过绝大多数应用层 SSL Pinning，效率最高。</div>
+        </div>
+      </div>
 
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">tcpdump使用</h4>
-              <div class="code-block">
-                <pre># 在Android设备上执行
-./tcpdump -i any -p -s 0 -w /sdcard/myCapture.pcap
+      <!-- 1.4 TCP -->
+      <div id="tcp-capture" class="content-card">
+        <h3 class="section-title"><i class="fas fa-stream"></i>1.4 TCP 协议抓包与分析</h3>
+        <p>
+          虽然 HTTP/HTTPS 是最常见的协议，但许多对性能和实时性要求高的 APP（游戏、即时通讯、音视频流等），会直接使用 <strong>TCP/UDP</strong> 等底层协议传输数据，或基于其封装自定义应用层协议。
+          <a href="https://zhuanlan.zhihu.com/p/98955951" class="citation" target="_blank">12</a>
+        </p>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-terminal"></i>tcpdump 使用</h4>
+            <div class="code-wrapper" style="margin:0.5rem 0 0;">
+              <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                <span class="code-lang">bash</span>
+                <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
+              </div>
+              <pre><code class="language-bash"># 在 Android 设备上执行
+./tcpdump -i any -p -s 0 -w /sdcard/cap.pcap
 
-# 常用参数说明
+# 参数说明
 -i any   # 监听所有网络接口
 -p       # 不启用混杂模式
--s 0     # 捕获完整数据包
--w       # 写入文件</pre>
-              </div>
+-s 0     # 捕获完整数据包（65535）
+-w       # 写入文件，后续可用 Wireshark 分析</code></pre>
             </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">Wireshark过滤语法</h4>
-              <div class="code-block">
-                <pre># 基本过滤
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-filter"></i>Wireshark 过滤语法</h4>
+            <div class="code-wrapper" style="margin:0.5rem 0 0;">
+              <div class="code-header">
+                <div class="code-dots"><span></span><span></span><span></span></div>
+                <span class="code-lang">filter</span>
+                <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
+              </div>
+              <pre><code class="language-plaintext"># 基础过滤
 tcp.port == 8888
 ip.addr == 192.168.1.100 && tcp
 
 # 高级过滤
 tcp contains "keyword"
 tcp.flags.syn == 1
-tcp.analysis.retransmission</pre>
-              </div>
+tcp.analysis.retransmission</code></pre>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- QUIC Capture -->
-        <div id="quic-capture" class="content-block">
-          <h3 class="subsection-title serif">1.5 QUIC协议抓包与挑战</h3>
-          <p class="mb-4">
-            QUIC（Quick UDP Internet Connections）是一种基于UDP的传输协议，由Google主导开发，旨在减少连接建立和数据传输的延迟，并提供更好的拥塞控制和安全性。QUIC协议默认集成了TLS 1.3加密，其数据包在传输层就已经加密，因此传统的基于TCP的抓包工具无法直接解析其内容。
-            <a href="https://www.cnblogs.com/eliwang/p/18023833" class="citation" target="_blank">[15]</a>
-          </p>
+      <!-- 1.5 QUIC -->
+      <div id="quic-capture" class="content-card">
+        <h3 class="section-title"><i class="fas fa-bolt"></i>1.5 QUIC 协议抓包与挑战</h3>
+        <p>
+          <strong>QUIC</strong>（Quick UDP Internet Connections）是 Google 主导的基于 UDP 的传输协议，旨在减少连接建立延迟、改进拥塞控制并提供更强的安全性。QUIC 默认集成 TLS 1.3，在传输层就已加密，传统 TCP 抓包工具无法直接解析其内容。
+          <a href="https://www.cnblogs.com/eliwang/p/18023833" class="citation" target="_blank">15</a>
+        </p>
+        <div class="info-card">
+          <h4><i class="fas fa-lightbulb"></i>QUIC 抓包技术方案</h4>
+          <ul>
+            <li><strong>Wireshark 3.0+</strong>：配置 <code>SSLKEYLOGFILE</code> 环境变量导出密钥，支持 QUIC 解码</li>
+            <li><strong>mitmproxy 10+</strong>：已支持 HTTPS/3（QUIC）中间人代理</li>
+            <li><strong>协议降级</strong>：通过 Frida Hook 强制应用走 HTTP/2 或 HTTP/1.1</li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
-          <div class="method-card">
-            <h4 class="font-semibold mb-2">QUIC抓包技术方案</h4>
-            <ul class="space-y-2">
-              <li><strong>Wireshark 3.0.0+</strong>：配置SSLKEYLOGFILE环境变量，支持QUIC协议解码</li>
-              <li><strong>mitmproxy</strong>：支持HTTPS和QUIC的中间人代理工具</li>
-              <li><strong>协议降级</strong>：通过Hook强制应用使用HTTP协议</li>
+    <!-- 2. 参数分析 -->
+    <section id="parameter-analysis">
+      <h2 class="chapter-title">2. APP 参数逆向分析方法<span class="ch-num">Chapter 2</span></h2>
+
+      <!-- 2.1 Java 反编译 -->
+      <div id="java-decompilation" class="content-card">
+        <h3 class="section-title"><i class="fab fa-java"></i>2.1 Java 层代码反编译与分析</h3>
+        <p>
+          Java/Kotlin 层是 Android APP 业务逻辑的主要载体，对其进行反编译分析是 APP 逆向的核心环节。常用 Java 反编译工具有 <code>Jadx</code>、<code>JEB</code>、<code>Bytecode Viewer</code> 等。
+          <a href="https://book.crifan.org/books/android_re_decompile_jadx/website/" class="citation" target="_blank">17</a>
+          <a href="https://developer.aliyun.com/article/1473482" class="citation" target="_blank">18</a>
+        </p>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-search"></i>Jadx 功能特点</h4>
+            <ul>
+              <li>提供 GUI 界面与命令行双版本</li>
+              <li>跨平台支持 Windows / Linux / macOS</li>
+              <li>反混淆、显示"坏代码"高亮提示</li>
+              <li>强大的全局搜索（字符串/类名/方法名）</li>
+              <li>直接解析 AndroidManifest.xml 与资源文件</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-brain"></i>JEB 高级功能</h4>
+            <ul>
+              <li>支持多处理器架构的 Native 代码反编译</li>
+              <li>处理混淆代码并支持手工重构分析</li>
+              <li>重建资源与混淆后的 XML 文件</li>
+              <li>支持 Dalvik 与 Native 代码无缝调试</li>
+              <li>以太坊智能合约等扩展反编译支持</li>
             </ul>
           </div>
         </div>
-      </section>
+      </div>
 
-      <!-- Parameter Analysis Section -->
-      <section id="parameter-analysis" class="container mx-auto px-8 py-8 bg-gray-50">
-        <h2 class="section-title serif">2. APP参数逆向分析方法</h2>
-
-        <!-- Java Decompilation -->
-        <div id="java-decompilation" class="content-block">
-          <h3 class="subsection-title serif">2.1 Java层代码反编译与分析</h3>
-          <p class="mb-4">
-            Java层代码是Android APP业务逻辑的主要承载部分，对其进行反编译和分析是APP逆向工程的核心环节。常用的Java反编译工具有<code>Jadx</code>、<code>JEB</code>、<code>Bytecode Viewer</code>等。
-            <a href="https://book.crifan.org/books/android_re_decompile_jadx/website/" class="citation" target="_blank">[17]</a>
-            <a href="https://developer.aliyun.com/article/1473482" class="citation" target="_blank">[18]</a>
-          </p>
-
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">Jadx功能特点</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• 提供GUI界面和命令行版本</li>
-                <li>• 支持多平台（Windows/Linux/macOS）</li>
-                <li>• 显示"坏代码"和反混淆功能</li>
-                <li>• 强大的搜索功能（字符串、类名、方法名）</li>
-                <li>• 解析AndroidManifest.xml和资源文件</li>
-              </ul>
-            </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">JEB高级功能</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• 支持多种处理器架构的Native代码反编译</li>
-                <li>• 处理混淆代码和重构分析</li>
-                <li>• 重建资源和混淆的XML文件</li>
-                <li>• 支持Dalvik和Native代码无缝调试</li>
-                <li>• 以太坊智能合约反编译支持</li>
-              </ul>
-            </div>
-          </div>
+      <!-- 2.2 Native -->
+      <div id="native-decompilation" class="content-card">
+        <h3 class="section-title"><i class="fas fa-microchip"></i>2.2 Native 层（C/C++）代码反编译与分析</h3>
+        <p>
+          Android APP 除 Java/Kotlin 代码外，还可包含 Native 代码（通常以 <code>.so</code> 共享库形式存在于 APK 的 <code>lib/</code> 目录）。Native 代码常用于高性能计算、底层系统调用、复用 C/C++ 库，或承载<strong>核心加密算法与安全防护逻辑</strong>。
+        </p>
+        <div class="info-card">
+          <h4><i class="fas fa-project-diagram"></i>IDA Pro 分析流程</h4>
+          <ol>
+            <li>打开目标 <code>.so</code> 文件，IDA 自动完成初步分析</li>
+            <li>识别函数、字符串、导入表、导出表等符号信息</li>
+            <li>定位目标函数（JNI 方法或关键加密函数）</li>
+            <li>分析汇编代码，按 <kbd>F5</kbd> 查看伪代码（Hex-Rays）</li>
+            <li>使用交叉引用（Xrefs）和图形视图辅助调用链分析</li>
+          </ol>
         </div>
-
-        <!-- Native Decompilation -->
-        <div id="native-decompilation" class="content-block">
-          <h3 class="subsection-title serif">2.2 Native层（C/C++）代码反编译与分析</h3>
-          <p class="mb-4">
-            Android APP除了Java/Kotlin代码外，还可以包含Native代码，通常以<code>.so</code>（共享对象库）文件的形式存在于APK的<code>lib</code>目录下。Native代码通常用于实现高性能计算、调用底层系统功能、复用已有的C/C++库，或者实现核心的加密算法和安全防护逻辑。
-          </p>
-
-          <div class="method-card">
-            <h4 class="font-semibold mb-2">IDA Pro分析流程</h4>
-            <ol class="list-decimal list-inside space-y-2">
-              <li>打开目标<code>.so</code>文件，IDA会自动进行初步分析</li>
-              <li>识别函数、字符串、导入表、导出表等</li>
-              <li>定位目标函数（JNI方法或关键函数）</li>
-              <li>分析汇编代码和伪代码（F5功能）</li>
-              <li>使用交叉引用和图形视图辅助分析</li>
-            </ol>
-          </div>
-
-          <div class="pull-quote">
-            通过分析伪代码的逻辑流程、变量赋值、函数调用等，可以推断出Native函数的功能和算法实现。动态调试也是分析Native代码的重要手段。
-          </div>
+        <div class="callout tip">
+          <div class="callout-icon"><i class="fas fa-lightbulb"></i></div>
+          <div>通过分析伪代码的<strong>逻辑流程、变量赋值、函数调用</strong>，可推断出 Native 函数的功能和算法实现。动态调试（IDA + gdbserver/frida）是分析混淆/加壳 Native 代码的必要手段。</div>
         </div>
+      </div>
 
-        <!-- Frida Application -->
-        <div id="frida-application" class="content-block">
-          <h3 class="subsection-title serif">2.3 动态分析工具：Frida的应用与实战</h3>
-          <p class="mb-4">
-            Frida是一款强大的动态代码插桩（Dynamic Code Instrumentation）工具，支持Android、iOS、Windows、macOS、Linux等多种平台。它允许通过JavaScript脚本Hook应用程序的函数调用、修改内存数据、调用任意函数等，而无需修改目标应用的原始代码。
-            <a href="https://book.crifan.org/books/android_re_dynamic_debug/website/frida_debug_android/" class="citation" target="_blank">[31]</a>
-            <a href="https://iiong.com/reinforce-android-applications-for-unpacking-learning/" class="citation" target="_blank">[370]</a>
-          </p>
+      <!-- 2.3 Frida -->
+      <div id="frida-application" class="content-card">
+        <h3 class="section-title"><i class="fas fa-syringe"></i>2.3 动态分析：Frida 的应用与实战</h3>
+        <p>
+          Frida 是一款强大的<strong>动态代码插桩（Dynamic Code Instrumentation）</strong>工具，支持 Android / iOS / Windows / macOS / Linux 多平台。它允许通过 JavaScript 脚本 Hook 函数调用、修改内存数据、调用任意函数，而无需修改原始 APP 代码。
+          <a href="https://book.crifan.org/books/android_re_dynamic_debug/website/frida_debug_android/" class="citation" target="_blank">31</a>
+          <a href="https://iiong.com/reinforce-android-applications-for-unpacking-learning/" class="citation" target="_blank">370</a>
+        </p>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">javascript · frida</span>
+            <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
+          </div>
+          <pre><code class="language-javascript">// Frida 基本 Hook 示例
+Java.perform(function () {
+    var TargetClass = Java.use("com.example.TargetClass");
 
-          <div class="code-block">
-            <pre>// Frida基本Hook示例
-Java.perform(function() {
-    var targetClass = Java.use("com.example.TargetClass");
-    
-    targetClass.targetMethod.implementation = function(param1, param2) {
-        console.log("Hook成功！参数:", param1, param2);
-        
-        // 修改参数或返回值
+    TargetClass.targetMethod.implementation = function (param1, param2) {
+        console.log("[*] Hook 成功，参数:", param1, param2);
+
+        // 可修改参数、修改返回值，或在调用前后做自定义逻辑
         var result = this.targetMethod(param1 + " modified", param2);
         return result + " modified";
     };
-});</pre>
+});</code></pre>
+          <div class="code-hint">← 左右滑动查看完整代码 · 右上角一键复制 →</div>
+        </div>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-cogs"></i>Frida 核心 API</h4>
+            <ul>
+              <li><code>Java.use(className)</code> —— 获取 Java 类引用</li>
+              <li><code>Interceptor.attach(addr, cb)</code> —— Hook Native 函数</li>
+              <li><code>Java.perform(fn)</code> —— 在 Java VM 线程中执行代码</li>
+              <li><code>Java.choose(class, cb)</code> —— 枚举堆中已加载实例</li>
+            </ul>
           </div>
-
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">Frida核心功能</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• <code>Java.use(className)</code> - 获取Java类引用</li>
-                <li>• <code>Interceptor.attach(address, callbacks)</code> - Hook Native函数</li>
-                <li>• <code>Java.perform(fn)</code> - 在Java上下文中执行代码</li>
-                <li>• <code>Java.choose(className, callbacks)</code> - 枚举已加载的实例</li>
-              </ul>
-            </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">Objection自动化工具</h4>
-              <ul class="space-y-2 text-sm">
-                <li>• <code>android sslpinning disable</code> - 自动禁用SSL Pinning</li>
-                <li>• <code>android root disable</code> - 绕过Root检测</li>
-                <li>• <code>android hooking watch</code> - 监控方法调用</li>
-                <li>• 支持非Root设备Frida Gadget注入</li>
-              </ul>
-            </div>
+          <div class="info-card">
+            <h4><i class="fas fa-robot"></i>Objection 自动化工具</h4>
+            <ul>
+              <li><code>android sslpinning disable</code> —— 一键禁用 SSL Pinning</li>
+              <li><code>android root disable</code> —— 绕过 Root 检测</li>
+              <li><code>android hooking watch</code> —— 监控方法调用</li>
+              <li>支持非 Root 设备通过 Frida Gadget 注入</li>
+            </ul>
           </div>
         </div>
+      </div>
 
-        <!-- Xposed Framework -->
-        <div id="xposed-framework" class="content-block">
-          <h3 class="subsection-title serif">2.4 动态分析工具：Xposed框架的应用与绕过</h3>
-          <p class="mb-4">
-            Xposed框架是一个运行于Android操作系统的动态HOOK框架，它允许在不修改APK文件的情况下，通过安装模块来改变系统和应用的行为。与Frida相比，Xposed主要专注于Java层的HOOK，并且需要修改系统环境。
-            <a href="https://blog.csdn.net/weixin_46734340/article/details/117756589" class="citation" target="_blank">[389]</a>
-          </p>
-
-          <div class="method-card">
-            <h4 class="font-semibold mb-2">Xposed模块开发核心</h4>
-            <div class="code-block">
-              <pre>public class MyModule implements IXposedHookLoadPackage {
+      <!-- 2.4 Xposed -->
+      <div id="xposed-framework" class="content-card">
+        <h3 class="section-title"><i class="fas fa-puzzle-piece"></i>2.4 动态分析：Xposed 框架的应用与绕过</h3>
+        <p>
+          Xposed 是运行于 Android 系统的经典动态 Hook 框架，通过替换 <code>app_process</code> 在 Zygote 阶段加载模块，允许在不修改 APK 的前提下改变系统和应用行为。与 Frida 相比，Xposed 专注于 <strong>Java 层 Hook</strong>，需要修改系统环境，但模块常驻、无需每次注入。
+          <a href="https://blog.csdn.net/weixin_46734340/article/details/117756589" class="citation" target="_blank">389</a>
+        </p>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">java · xposed</span>
+            <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
+          </div>
+          <pre><code class="language-java">public class MyModule implements IXposedHookLoadPackage {
     public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
-        if (!lpparam.packageName.equals("target.package")) {
-            return;
-        }
-        
-        XposedHelpers.findAndHookMethod("com.example.TargetClass", 
-            lpparam.classLoader, "targetMethod", 
+        if (!lpparam.packageName.equals("target.package")) return;
+
+        XposedHelpers.findAndHookMethod("com.example.TargetClass",
+            lpparam.classLoader, "targetMethod",
             String.class, int.class, new XC_MethodHook() {
-                
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
-                    // 方法执行前的处理
+                    // 方法执行前：可修改参数
                 }
-                
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
-                    // 方法执行后的处理
+                    // 方法执行后：可修改返回值
                 }
             });
     }
-}</pre>
-            </div>
-          </div>
+}</code></pre>
+          <div class="code-hint">← 左右滑动查看完整代码 · 右上角一键复制 →</div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Security Bypass Section -->
-      <section id="security-bypass" class="container mx-auto px-8 py-8">
-        <h2 class="section-title serif">3. APP安全防护与逆向突破</h2>
+    <!-- 3. 防护绕过 -->
+    <section id="security-bypass">
+      <h2 class="chapter-title">3. APP 安全防护与逆向突破<span class="ch-num">Chapter 3</span></h2>
 
-        <!-- Detection Bypass -->
-        <div id="detection-bypass" class="content-block">
-          <h3 class="subsection-title serif">3.1 APP常见检测机制与绕过方法</h3>
+      <!-- 3.1 检测绕过 -->
+      <div id="detection-bypass" class="content-card">
+        <h3 class="section-title"><i class="fas fa-user-shield"></i>3.1 APP 常见检测机制与绕过方法</h3>
 
-          <h4 class="font-semibold text-lg mb-3">Root检测与绕过</h4>
-          <p class="mb-4">
-            Root检测是APP常用的一种安全防护手段，旨在识别运行环境是否具有Root权限。常见的Root检测方法包括检查特定路径下是否存在<code>su</code>等Root管理工具相关的可执行文件、检查系统属性、尝试执行需要Root权限的操作等。
-            <a href="https://blog.csdn.net/qq_52380836/article/details/136179658" class="citation" target="_blank">[201]</a>
-            <a href="https://www.cnblogs.com/eliwang/p/17950005" class="citation" target="_blank">[208]</a>
-          </p>
-
-          <div class="table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>检测点类别</th>
-                  <th>具体检测方法</th>
-                  <th>应用层Hook绕过思路</th>
-                  <th>系统层定制/AOSP修改思路</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Root相关文件检测</strong></td>
-                  <td>检查<code>/system/bin/su</code>, <code>/system/xbin/su</code>等路径</td>
-                  <td>Hook文件访问函数，返回<code>false</code></td>
-                  <td>修改文件系统，移除或重命名<code>su</code>文件</td>
-                </tr>
-                <tr>
-                  <td><strong>Root相关属性检测</strong></td>
-                  <td>检查<code>ro.build.tags</code>是否为<code>test-keys</code></td>
-                  <td>Hook <code>SystemProperties.get()</code>方法</td>
-                  <td>修改<code>build.prop</code>文件，将<code>test-keys</code>改为<code>release-keys</code></td>
-                </tr>
-                <tr>
-                  <td><strong>Root管理应用检测</strong></td>
-                  <td>检查已安装应用列表中是否存在SuperSU等包名</td>
-                  <td>Hook包管理器相关API，过滤Root管理应用</td>
-                  <td>卸载或冻结Root管理应用</td>
-                </tr>
-                <tr>
-                  <td><strong>执行Root命令检测</strong></td>
-                  <td>尝试执行<code>su -c whoami</code>等命令</td>
-                  <td>Hook <code>Runtime.exec()</code>等方法</td>
-                  <td>修改<code>su</code>命令本身，返回非<code>root</code>结果</td>
-                </tr>
-                <tr>
-                  <td><strong>系统指纹检测</strong></td>
-                  <td>检查<code>android.os.Build</code>中的<code>FINGERPRINT</code>、<code>TAGS</code>等字段</td>
-                  <td>Hook <code>android.os.Build</code>类的相关方法</td>
-                  <td>修改AOSP源码中<code>deriveFingerprint()</code>等方法</td>
-                </tr>
-              </tbody>
-            </table>
-            <p class="text-sm text-gray-600 mt-2">Table 2: Root检测点及绕过思路</p>
-          </div>
-
-          <h4 class="font-semibold text-lg mb-3 mt-8">Xposed与Frida检测绕过</h4>
-          <div class="table-container">
-            <table class="custom-table">
-              <thead>
-                <tr>
-                  <th>检测点类别</th>
-                  <th>具体检测方法</th>
-                  <th>应用层Hook/配置绕过思路</th>
-                  <th>系统层定制/AOSP修改思路</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>Xposed检测</strong></td>
-                  <td>检查<code>de.robv.android.xposed.installer</code>等包名</td>
-                  <td>使用Xposed隐藏模块（XPrivacyLua）</td>
-                  <td>修改包管理器API，过滤Xposed Installer包名</td>
-                </tr>
-                <tr>
-                  <td><strong>Xposed检测</strong></td>
-                  <td>检查<code>/system/framework/XposedBridge.jar</code>等文件</td>
-                  <td>Hook文件访问函数，返回文件不存在</td>
-                  <td>修改文件系统，隐藏Xposed相关文件</td>
-                </tr>
-                <tr>
-                  <td><strong>Frida检测</strong></td>
-                  <td>检测<code>frida-server</code>进程名</td>
-                  <td>重命名<code>frida-server</code>二进制文件</td>
-                  <td>修改进程枚举相关的系统API</td>
-                </tr>
-                <tr>
-                  <td><strong>Frida检测</strong></td>
-                  <td>检测默认端口（27042/tcp）是否被监听</td>
-                  <td>启动时指定非默认端口</td>
-                  <td>修改网络连接状态相关的系统API</td>
-                </tr>
-              </tbody>
-            </table>
-            <p class="text-sm text-gray-600 mt-2">Table 3: Xposed与Frida检测点及绕过思路</p>
-          </div>
+        <h4 class="sub"><i class="fas fa-hashtag"></i>Root 检测与绕过</h4>
+        <p>
+          Root 检测是 APP 常用的安全防护手段，用于识别运行环境是否具有 Root 权限。常见检测点包括：特定路径是否存在 <code>su</code>、系统属性 <code>ro.build.tags</code>、已安装应用列表、执行 <code>su</code> 命令、Build 指纹等。
+          <a href="https://blog.csdn.net/qq_52380836/article/details/136179658" class="citation" target="_blank">201</a>
+          <a href="https://www.cnblogs.com/eliwang/p/17950005" class="citation" target="_blank">208</a>
+        </p>
+        <div class="table-wrapper">
+          <table class="cols-4">
+            <thead>
+              <tr>
+                <th>检测点类别</th>
+                <th>具体检测方法</th>
+                <th>应用层 Hook 绕过</th>
+                <th>系统层 AOSP 定制</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Root 文件检测</strong></td>
+                <td>检查 <code>/system/bin/su</code>、<code>/system/xbin/su</code> 等路径</td>
+                <td>Hook 文件访问函数，返回 <code>false</code></td>
+                <td>修改文件系统，移除或重命名 su</td>
+              </tr>
+              <tr>
+                <td><strong>系统属性检测</strong></td>
+                <td>检查 <code>ro.build.tags</code> 是否为 <code>test-keys</code></td>
+                <td>Hook <code>SystemProperties.get()</code></td>
+                <td>修改 <code>build.prop</code>，改为 <code>release-keys</code></td>
+              </tr>
+              <tr>
+                <td><strong>Root 应用检测</strong></td>
+                <td>检查是否安装 SuperSU/Magisk Manager 等包名</td>
+                <td>Hook 包管理器 API，过滤 Root 管理应用</td>
+                <td>卸载或冻结 Root 管理应用</td>
+              </tr>
+              <tr>
+                <td><strong>Root 命令检测</strong></td>
+                <td>尝试执行 <code>su -c whoami</code></td>
+                <td>Hook <code>Runtime.exec()</code></td>
+                <td>修改 su 二进制，返回非 root 结果</td>
+              </tr>
+              <tr>
+                <td><strong>系统指纹检测</strong></td>
+                <td>检查 <code>Build.FINGERPRINT/TAGS</code> 字段</td>
+                <td>Hook <code>android.os.Build</code> 相关方法</td>
+                <td>修改 AOSP 中 <code>deriveFingerprint()</code></td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="table-caption">表 2 · Root 检测点及绕过思路</p>
         </div>
 
-        <!-- Unpacking -->
-        <div id="unpacking" class="content-block">
-          <h3 class="subsection-title serif">3.2 APP加壳（加固）技术与脱壳方法</h3>
-          <p class="mb-4">
-            APP加壳，也称为APP加固，是一种保护Android应用程序免受逆向工程和恶意篡改的技术。其核心思想是对原始的DEX文件（包含应用的Java代码）和so库文件（包含Native代码）进行加密、混淆、虚拟化等处理。
-            <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">[203]</a>
-            <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">[266]</a>
-          </p>
+        <h4 class="sub"><i class="fas fa-eye-slash"></i>Xposed 与 Frida 检测绕过</h4>
+        <div class="table-wrapper">
+          <table class="cols-4">
+            <thead>
+              <tr>
+                <th>检测点类别</th>
+                <th>具体检测方法</th>
+                <th>应用层 Hook 绕过</th>
+                <th>系统层 AOSP 定制</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Xposed 检测</strong></td>
+                <td>检查 <code>de.robv.android.xposed.installer</code> 等包名</td>
+                <td>使用 XPrivacyLua 等隐藏模块</td>
+                <td>修改包管理器 API，过滤 Xposed 包名</td>
+              </tr>
+              <tr>
+                <td><strong>Xposed 检测</strong></td>
+                <td>检查 <code>/system/framework/XposedBridge.jar</code> 等文件</td>
+                <td>Hook 文件访问函数，返回不存在</td>
+                <td>修改文件系统，隐藏 Xposed 相关文件</td>
+              </tr>
+              <tr>
+                <td><strong>Frida 检测</strong></td>
+                <td>扫描 <code>frida-server</code> 进程名</td>
+                <td>重命名 frida-server 二进制文件</td>
+                <td>修改进程枚举相关系统 API</td>
+              </tr>
+              <tr>
+                <td><strong>Frida 检测</strong></td>
+                <td>检测默认端口 <code>27042/tcp</code> 是否监听</td>
+                <td>启动时指定 <code>-l 0.0.0.0:xxxx</code> 非默认端口</td>
+                <td>修改网络连接状态相关系统 API</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="table-caption">表 3 · Xposed 与 Frida 检测点及绕过思路</p>
+        </div>
+      </div>
 
-          <!-- Mermaid diagram for unpacking process -->
-          <div class="mermaid-container">
-            <div class="mermaid-controls">
-              <button class="mermaid-control-btn zoom-in" title="放大">
-                <i class="fas fa-search-plus"></i>
-              </button>
-              <button class="mermaid-control-btn zoom-out" title="缩小">
-                <i class="fas fa-search-minus"></i>
-              </button>
-              <button class="mermaid-control-btn reset-zoom" title="重置">
-                <i class="fas fa-expand-arrows-alt"></i>
-              </button>
-              <button class="mermaid-control-btn fullscreen" title="全屏查看">
-                <i class="fas fa-expand"></i>
-              </button>
-            </div>
-            <div class="mermaid" id="mermaid-diagram">
-              graph TD
-              A["加密的DEX/So文件"] --> B["壳程序加载"]
-              B --> C{"内存中解密?"}
-              C -->|是| D["原始代码在内存中"]
-              C -->|否| E["继续加密状态"]
-              D --> F["Hook关键函数"]
-              D --> G["内存Dump"]
-              D --> H["定制ROM脱壳"]
-              F --> I["获取解密代码"]
-              G --> I
-              H --> I
-              I --> J["分析原始逻辑"]
+      <!-- 3.2 加壳脱壳 -->
+      <div id="unpacking" class="content-card">
+        <h3 class="section-title"><i class="fas fa-box-open"></i>3.2 APP 加壳（加固）技术与脱壳方法</h3>
+        <p>
+          APP 加壳（加固）是保护 Android 应用免受逆向与篡改的核心技术，思路是对原始 DEX（Java 代码）和 so（Native 代码）进行加密、混淆、虚拟化处理，运行时再由壳程序解密加载。
+          <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">203</a>
+          <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">266</a>
+        </p>
 
-              style A fill:#ffebee,stroke:#d32f2f,stroke-width:2px,color:#000
-              style D fill:#e8f5e8,stroke:#388e3c,stroke-width:2px,color:#000
-              style I fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
-              style J fill:#fff3e0,stroke:#f57c00,stroke-width:2px,color:#000
-              style C fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
-            </div>
+        <div class="mermaid-container">
+          <div class="mermaid-controls">
+            <button class="mermaid-control-btn zoom-in" title="放大"><i class="fas fa-search-plus"></i></button>
+            <button class="mermaid-control-btn zoom-out" title="缩小"><i class="fas fa-search-minus"></i></button>
+            <button class="mermaid-control-btn reset-zoom" title="重置"><i class="fas fa-expand-arrows-alt"></i></button>
+            <button class="mermaid-control-btn fullscreen" title="全屏"><i class="fas fa-expand"></i></button>
           </div>
+          <div class="mermaid">
+graph TD
+    A["🔒 加密的 DEX/So 文件"] --> B["📦 壳程序加载"]
+    B --> C{"内存中解密?"}
+    C -->|是| D["✅ 原始代码在内存中"]
+    C -->|否| E["🔐 仍处于加密状态"]
+    D --> F["🪝 Hook 关键函数"]
+    D --> G["💾 内存 Dump"]
+    D --> H["🛠️ 定制 ROM 脱壳"]
+    F --> I["🎯 获取解密代码"]
+    G --> I
+    H --> I
+    I --> J["🔍 分析原始逻辑"]
 
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">常见加壳技术</h4>
-              <ul class="space-y-2 text-sm">
-                <li><strong>整体加固（DEX加密）</strong>：壳程序将原始DEX文件整体加密，运行时解密加载</li>
-                <li><strong>抽取壳</strong>：将方法体指令抽取出来单独加密，原方法体用NOP填充</li>
-                <li><strong>VMP壳</strong>：将代码转换为自定义指令集字节码，内部解释器执行</li>
-                <li><strong>so加固</strong>：针对Native库的代码混淆、控制流平坦化、字符串加密</li>
-              </ul>
-            </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">脱壳方法分类</h4>
-              <ul class="space-y-2 text-sm">
-                <li><strong>静态脱壳</strong>：分析壳程序解密算法，编写解密脚本</li>
-                <li><strong>动态脱壳</strong>：利用APP运行时内存中的数据</li>
-                <li><strong>内存Dump</strong>：分析内存布局，找到解密后的DEX/so并提取</li>
-                <li><strong>Hook关键函数</strong>：通过Frida/Xposed Hook加载DEX的关键函数</li>
-                <li><strong>定制ROM/插桩脱壳</strong>：修改AOSP源码，在虚拟机执行路径插入Dump代码</li>
-              </ul>
-            </div>
+style A fill:#fee2e2,stroke:#dc2626,stroke-width:2px,color:#991b1b
+style D fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#166534
+style I fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e40af
+style J fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#92400e
+style C fill:#f3e8ff,stroke:#9333ea,stroke-width:2px,color:#6b21a8
           </div>
         </div>
 
-        <!-- Frida Unpacking -->
-        <div id="frida-unpacking" class="content-block">
-          <h3 class="subsection-title serif">3.3 使用Frida进行动态脱壳</h3>
-          <p class="mb-4">
-            Frida作为一款强大的动态代码插桩工具，在APP逆向工程中扮演着至关重要的角色，尤其在动态脱壳方面展现出其独特的优势。<strong>FRIDA-DEXDump</strong> 是一款基于Frida的经典Android脱壳工具，由hluwa开发并开源。
-            <a href="https://blog.csdn.net/qq_36301061/article/details/143532553" class="citation" target="_blank">[341]</a>
-            <a href="https://blog.csdn.net/weixin_38819889/article/details/123880076" class="citation" target="_blank">[344]</a>
-          </p>
-
-          <div class="method-card">
-            <h4 class="font-semibold mb-2">FRIDA-DEXDump脱壳步骤</h4>
-            <ol class="list-decimal list-inside space-y-2">
-              <li>确保目标Android设备已root，并安装匹配版本的frida-server</li>
-              <li>在PC上安装FRIDA-DEXDump：<code>pip install frida-dexdump</code></li>
-              <li>启动目标应用程序</li>
-              <li>在PC上运行：<code>frida-dexdump -U -f com.target.app</code></li>
-              <li>工具会自动附加到目标进程，搜索并dump内存中的DEX文件</li>
-            </ol>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-shield-alt"></i>常见加壳技术</h4>
+            <ul>
+              <li><strong>整体加固（DEX 加密）</strong>：壳程序整体加密原始 DEX，运行时解密加载</li>
+              <li><strong>抽取壳</strong>：抽取方法体指令单独加密，原方法体用 NOP 填充</li>
+              <li><strong>VMP 壳</strong>：代码转为自定义指令集字节码，内置解释器执行</li>
+              <li><strong>so 加固</strong>：Native 库代码混淆、控制流平坦化、字符串加密</li>
+            </ul>
           </div>
+          <div class="info-card">
+            <h4><i class="fas fa-unlock"></i>脱壳方法分类</h4>
+            <ul>
+              <li><strong>静态脱壳</strong>：分析壳解密算法，编写解密脚本</li>
+              <li><strong>动态脱壳</strong>：利用 APP 运行时内存中的数据</li>
+              <li><strong>内存 Dump</strong>：分析内存布局，提取解密后的 DEX/so</li>
+              <li><strong>Hook 关键函数</strong>：Frida/Xposed Hook DEX 加载点</li>
+              <li><strong>定制 ROM/插桩脱壳</strong>：AOSP 源码中插入 Dump 代码</li>
+            </ul>
+          </div>
+        </div>
+      </div>
 
-          <div class="code-block">
-            <pre>// 自定义Frida脱壳脚本示例
-Java.perform(function() {
-    var dexDump = function() {
-        // 搜索内存中的DEX文件特征
-        Process.enumerateRanges('r--').forEach(function(range) {
+      <!-- 3.3 Frida 脱壳 -->
+      <div id="frida-unpacking" class="content-card">
+        <h3 class="section-title"><i class="fas fa-syringe"></i>3.3 使用 Frida 进行动态脱壳</h3>
+        <p>
+          Frida 在动态脱壳方面具备独特优势。经典工具 <strong>FRIDA-DEXDump</strong>（hluwa 开源）是基于 Frida 的 Android 脱壳器，利用内存特征扫描自动 dump 出解密后的 DEX。
+          <a href="https://blog.csdn.net/qq_36301061/article/details/143532553" class="citation" target="_blank">341</a>
+          <a href="https://blog.csdn.net/weixin_38819889/article/details/123880076" class="citation" target="_blank">344</a>
+        </p>
+        <div class="info-card">
+          <h4><i class="fas fa-list-ol"></i>FRIDA-DEXDump 脱壳步骤</h4>
+          <ol>
+            <li>确保 Android 设备已 Root，并安装版本匹配的 <code>frida-server</code></li>
+            <li>PC 端安装：<code>pip install frida-dexdump</code></li>
+            <li>启动目标 APP</li>
+            <li>PC 执行：<code>frida-dexdump -U -f com.target.app</code></li>
+            <li>工具自动附加进程，搜索并 dump 内存中的 DEX 文件</li>
+          </ol>
+        </div>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">javascript · frida 脱壳</span>
+            <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
+          </div>
+          <pre><code class="language-javascript">// 自定义 Frida 脱壳脚本：扫描 DEX 魔数并 dump
+Java.perform(function () {
+    var dexDump = function () {
+        Process.enumerateRanges('r--').forEach(function (range) {
             try {
                 var magic = range.base.readCString(4);
                 if (magic === 'dex\n') {
-                    console.log('Found DEX at:', range.base);
-                    
-                    // 计算DEX大小
+                    console.log('[+] Found DEX at:', range.base);
+
+                    // DEX 头 0x20 处为 file_size（单位：uint，需注意对齐）
                     var fileSize = range.base.add(0x20).readUInt() * 4;
-                    console.log('DEX size:', fileSize);
-                    
-                    // Dump到文件
+                    console.log('[+] DEX size:', fileSize);
+
                     var dexData = range.base.readByteArray(fileSize);
                     var outPath = '/sdcard/dex_dump_' + range.base + '.dex';
                     var outFile = new File(outPath, 'wb');
                     outFile.write(dexData);
                     outFile.close();
-                    
-                    console.log('Dumped to:', outPath);
+                    console.log('[+] Dumped to:', outPath);
                 }
-            } catch (e) {
-                // 忽略错误
-            }
+            } catch (e) { /* 忽略不可读区域 */ }
         });
     };
-    
-    // 延时执行，确保DEX已加载
+
+    // 延时执行，等待壳解密 DEX 并加载
     setTimeout(dexDump, 3000);
-});</pre>
+});</code></pre>
+          <div class="code-hint">← 左右滑动查看完整代码 · 右上角一键复制 →</div>
+        </div>
+      </div>
+
+      <!-- 3.4 AOSP -->
+      <div id="aosp-customization" class="content-card">
+        <h3 class="section-title"><i class="fas fa-mobile-alt"></i>3.4 基于 AOSP 定制系统进行高级逆向</h3>
+        <p>
+          基于 <strong>AOSP（Android Open Source Project）</strong>定制系统是高级 APP 逆向的终极武器：通过修改并编译系统源码，可在系统层面对 APP 行为进行深度监控与干预。对复杂加固、强效检测、底层 Hook 等场景效果最佳。
+          <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">266</a>
+          <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">270</a>
+        </p>
+        <div class="card-grid">
+          <div class="info-card">
+            <h4><i class="fas fa-star"></i>AOSP 定制优势</h4>
+            <ul>
+              <li><strong>隐蔽性强</strong>：系统级修改难以被 APP 检测</li>
+              <li><strong>控制力强</strong>：可深度干预 APP 运行环境</li>
+              <li><strong>稳定性高</strong>：一次修改，长期有效</li>
+              <li><strong>功能强大</strong>：可同时脱壳+绕检测+抓包</li>
+            </ul>
+          </div>
+          <div class="info-card">
+            <h4><i class="fas fa-rocket"></i>FART 脱壳机原理</h4>
+            <ul>
+              <li>修改 ART 虚拟机源码</li>
+              <li>在类初始化/方法执行时插入 Dump 代码</li>
+              <li>主动调用 DEX 中各个函数</li>
+              <li>诱使壳解密对应 method 指令区</li>
+              <li>自动 dump 内存 DEX 数据</li>
+            </ul>
           </div>
         </div>
-
-        <!-- AOSP Customization -->
-        <div id="aosp-customization" class="content-block">
-          <h3 class="subsection-title serif">3.4 基于AOSP定制系统进行高级逆向</h3>
-          <p class="mb-4">
-            基于Android Open Source Project (AOSP) 定制Android系统是进行高级APP逆向分析的一种强大手段。通过修改和编译AOSP源码，可以在系统层面实现对APP行为的深度监控和干预，这对于分析复杂的加固方案、绕过强效的检测机制以及进行底层Hook等场景非常有效。
-            <a href="https://saucer-man.com/android/1000.html" class="citation" target="_blank">[266]</a>
-            <a href="https://whitebird0.github.io/post/Android%E7%B3%BB%E7%BB%9F%E6%B2%99%E7%9B%92%E5%AE%9A%E5%88%B6%E4%B8%93%E9%A2%98.html" class="citation" target="_blank">[270]</a>
-          </p>
-
-          <div class="tech-grid">
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">AOSP定制优势</h4>
-              <ul class="space-y-2 text-sm">
-                <li><strong>隐蔽性强</strong>：系统级修改更难被APP检测</li>
-                <li><strong>控制力强</strong>：可深度干预APP运行环境</li>
-                <li><strong>稳定性高</strong>：一次修改，长期有效</li>
-                <li><strong>功能强大</strong>：可同时实现脱壳、绕过检测等多种功能</li>
-              </ul>
-            </div>
-            <div class="tech-card">
-              <h4 class="font-semibold text-lg mb-3">FART脱壳机原理</h4>
-              <ul class="space-y-2 text-sm">
-                <li>修改ART虚拟机源码</li>
-                <li>在类初始化、方法执行时插入Dump代码</li>
-                <li>主动调用DEX中的各个函数</li>
-                <li>诱使壳解密对应的method指令区域</li>
-                <li>自动将内存中的DEX数据dump下来</li>
-              </ul>
-            </div>
+        <div class="callout info">
+          <div class="callout-icon"><i class="fas fa-info-circle"></i></div>
+          <div>定制 AOSP 进行逆向的优势在于<strong>强大控制力与隐蔽性</strong>，但技术门槛较高，需要熟悉 Android 系统架构、AOSP 源码结构与编译流程。建议在 Frida/Xposed 方案失效时再考虑。</div>
+        </div>
+        <div class="code-wrapper">
+          <div class="code-header">
+            <div class="code-dots"><span></span><span></span><span></span></div>
+            <span class="code-lang">diff · AOSP 定制示例</span>
+            <button class="copy-btn"><i class="far fa-copy"></i>复制</button>
           </div>
-
-          <div class="pull-quote">
-            定制AOSP系统进行逆向的优势在于其强大的控制能力和隐蔽性。然而，这种方法的技术门槛较高，需要熟悉Android系统架构、AOSP源码结构和编译流程。
-          </div>
-
-          <div class="method-card">
-            <h4 class="font-semibold mb-2">AOSP定制绕过检测示例</h4>
-            <div class="code-block">
-              <pre>// 修改系统属性，去除Root特征
+          <pre><code class="language-diff">// 修改系统属性，去除 Root 特征
 修改 build/core/main.mk:
-- BUILD_VERSION_TAGS := release-keys
-+ BUILD_VERSION_TAGS := test-keys
+- BUILD_VERSION_TAGS := test-keys
++ BUILD_VERSION_TAGS := release-keys
 
 修改 system/core/init/property_service.c:
 - __system_property_set("ro.secure", "0");
 + __system_property_set("ro.secure", "1");
 
-// 隐藏特定文件访问
-修改 libc/bionic/open.cpp:
+// 在 libc/bionic/open.cpp 隐藏特定文件访问
 if (strstr(path, "su") || strstr(path, "magisk")) {
     errno = ENOENT;
     return -1;
-}</pre>
-            </div>
-          </div>
+}</code></pre>
+          <div class="code-hint">← 左右滑动查看完整代码 · 右上角一键复制 →</div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <!-- Footer -->
-      <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-8">
-          <div class="text-center">
-            <p class="text-gray-400 mb-4">本文档提供了APP逆向工程的全面技术指导，适用于安全研究人员和开发人员学习使用</p>
-            <p class="text-sm text-gray-500">发布日期：2025年07月27日</p>
-          </div>
-        </div>
-      </footer>
-    </main>
+    <!-- 法律声明 -->
+    <section class="content-card" style="background:linear-gradient(135deg,#fff1f2,#fef2f2);border-color:#fecdd3;">
+      <h3 class="section-title" style="color:#b91c1c;"><i class="fas fa-gavel"></i>法律声明</h3>
+      <p style="color:#7f1d1d;">
+        本文所述技术仅用于<strong>授权范围内的安全研究与学习</strong>，严禁用于任何非法用途。在对任何 APP 进行逆向分析前，请确保已获得应用所有者的书面授权，或仅在自有 APP 上学习使用。违反者将自行承担相应法律责任。
+      </p>
+    </section>
+  </main>
 
-    <script>
-        // Initialize Mermaid with enhanced configuration
-        document.addEventListener('DOMContentLoaded', function() {
-            mermaid.initialize({ 
-                startOnLoad: true,
-                theme: 'base',
-                themeVariables: {
-                    primaryColor: '#ffffff',
-                    primaryTextColor: '#2d3748',
-                    primaryBorderColor: '#2c5282',
-                    lineColor: '#4299e1',
-                    secondaryColor: '#f7fafc',
-                    tertiaryColor: '#e2e8f0',
-                    background: '#ffffff',
-                    mainBkg: '#ffffff',
-                    secondBkg: '#f7fafc',
-                    tertiaryBkg: '#e2e8f0',
-                    // Enhanced contrast colors for different node types
-                    primaryTextColor: '#2d3748',
-                    secondaryTextColor: '#4a5568',
-                    tertiaryTextColor: '#718096',
-                    // Node colors with good contrast
-                    primaryBorderColor: '#1e3a5f',
-                    primaryTextColor: '#2d3748',
-                    // Error and success colors
-                    errorBkgColor: '#fed7d7',
-                    errorTextColor: '#c53030',
-                    successBkgColor: '#c6f6d5',
-                    successTextColor: '#2f855a'
-                },
-                flowchart: {
-                    useMaxWidth: false,
-                    htmlLabels: true,
-                    curve: 'basis',
-                    padding: 20
-                },
-                sequence: {
-                    useMaxWidth: false,
-                    padding: 20
-                },
-                gantt: {
-                    useMaxWidth: false,
-                    padding: 20
-                }
-            });
-            
-            // Initialize mermaid controls after a short delay to allow rendering
-            setTimeout(initializeMermaidControls, 1000);
+  <!-- 页脚 -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-brand"><i class="fas fa-shield-halved"></i> HaleShi · 逆向技术教学案例集</div>
+      <p class="footer-desc">本文档提供了 APP 逆向工程的全面技术指导，适用于安全研究人员和开发人员学习参考。</p>
+      <p class="footer-copy">© 2025 HaleShi · 发布日期 2025-07-27 · All Rights Reserved</p>
+    </div>
+  </footer>
+
+  <!-- 移动端底部 Tab -->
+  <nav class="mobile-tab">
+    <a href="#introduction" class="active"><i class="fas fa-home"></i>引言</a>
+    <a href="#packet-capture"><i class="fas fa-network-wired"></i>抓包</a>
+    <a href="#parameter-analysis"><i class="fas fa-code"></i>逆向</a>
+    <a href="#security-bypass"><i class="fas fa-lock-open"></i>防护</a>
+  </nav>
+
+  <!-- 回到顶部 -->
+  <button class="back-top" id="backTop" title="回到顶部"><i class="fas fa-arrow-up"></i></button>
+
+  <script>
+    // Mermaid 初始化
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      themeVariables: {
+        primaryColor: '#ffffff',
+        primaryTextColor: '#1e293b',
+        primaryBorderColor: '#4f46e5',
+        lineColor: '#6366f1',
+        fontFamily: 'inherit'
+      },
+      flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', padding: 20 }
+    });
+
+    // 代码高亮
+    document.addEventListener('DOMContentLoaded', () => {
+      hljs.highlightAll();
+      setTimeout(initMermaidControls, 800);
+      initCopyButtons();
+      initNumberCounters();
+      initScrollEffects();
+    });
+
+    // 数字滚动
+    function initNumberCounters() {
+      const kpis = document.querySelectorAll('.kpi-value');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const el = entry.target;
+            const target = parseInt(el.dataset.count || '0', 10);
+            let cur = 0;
+            const step = Math.max(1, Math.floor(target / 25));
+            const timer = setInterval(() => {
+              cur += step;
+              if (cur >= target) { cur = target; clearInterval(timer); }
+              el.textContent = cur;
+            }, 30);
+            observer.unobserve(el);
+          }
         });
+      }, { threshold: 0.3 });
+      kpis.forEach(el => observer.observe(el));
+    }
 
-        // Initialize Mermaid Controls for zoom and pan
-        function initializeMermaidControls() {
-            const containers = document.querySelectorAll('.mermaid-container');
-
-            containers.forEach(container => {
-            const mermaidElement = container.querySelector('.mermaid');
-            let scale = 1;
-            let isDragging = false;
-            let startX, startY, translateX = 0, translateY = 0;
-
-            // 触摸相关状态
-            let isTouch = false;
-            let touchStartTime = 0;
-            let initialDistance = 0;
-            let initialScale = 1;
-            let isPinching = false;
-
-            // Zoom controls
-            const zoomInBtn = container.querySelector('.zoom-in');
-            const zoomOutBtn = container.querySelector('.zoom-out');
-            const resetBtn = container.querySelector('.reset-zoom');
-            const fullscreenBtn = container.querySelector('.fullscreen');
-
-            function updateTransform() {
-                mermaidElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-
-                if (scale > 1) {
-                container.classList.add('zoomed');
-                } else {
-                container.classList.remove('zoomed');
-                }
-
-                mermaidElement.style.cursor = isDragging ? 'grabbing' : 'grab';
-            }
-
-            if (zoomInBtn) {
-                zoomInBtn.addEventListener('click', () => {
-                scale = Math.min(scale * 1.25, 4);
-                updateTransform();
-                });
-            }
-
-            if (zoomOutBtn) {
-                zoomOutBtn.addEventListener('click', () => {
-                scale = Math.max(scale / 1.25, 0.3);
-                if (scale <= 1) {
-                    translateX = 0;
-                    translateY = 0;
-                }
-                updateTransform();
-                });
-            }
-
-            if (resetBtn) {
-                resetBtn.addEventListener('click', () => {
-                scale = 1;
-                translateX = 0;
-                translateY = 0;
-                updateTransform();
-                });
-            }
-
-            if (fullscreenBtn) {
-                fullscreenBtn.addEventListener('click', () => {
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-                });
-            }
-
-            // Mouse Events
-            mermaidElement.addEventListener('mousedown', (e) => {
-                if (isTouch) return; // 如果是触摸设备，忽略鼠标事件
-
-                isDragging = true;
-                startX = e.clientX - translateX;
-                startY = e.clientY - translateY;
-                mermaidElement.style.cursor = 'grabbing';
-                updateTransform();
-                e.preventDefault();
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (isDragging && !isTouch) {
-                translateX = e.clientX - startX;
-                translateY = e.clientY - startY;
-                updateTransform();
-                }
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (isDragging && !isTouch) {
-                isDragging = false;
-                mermaidElement.style.cursor = 'grab';
-                updateTransform();
-                }
-            });
-
-            document.addEventListener('mouseleave', () => {
-                if (isDragging && !isTouch) {
-                isDragging = false;
-                mermaidElement.style.cursor = 'grab';
-                updateTransform();
-                }
-            });
-
-            // 获取两点之间的距离
-            function getTouchDistance(touch1, touch2) {
-                return Math.hypot(
-                touch2.clientX - touch1.clientX,
-                touch2.clientY - touch1.clientY
-                );
-            }
-
-            // Touch Events - 触摸事件处理
-            mermaidElement.addEventListener('touchstart', (e) => {
-                isTouch = true;
-                touchStartTime = Date.now();
-
-                if (e.touches.length === 1) {
-                // 单指拖动
-                isPinching = false;
-                isDragging = true;
-
-                const touch = e.touches[0];
-                startX = touch.clientX - translateX;
-                startY = touch.clientY - translateY;
-
-                } else if (e.touches.length === 2) {
-                // 双指缩放
-                isPinching = true;
-                isDragging = false;
-
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                initialDistance = getTouchDistance(touch1, touch2);
-                initialScale = scale;
-                }
-
-                e.preventDefault();
-            }, { passive: false });
-
-            mermaidElement.addEventListener('touchmove', (e) => {
-                if (e.touches.length === 1 && isDragging && !isPinching) {
-                // 单指拖动
-                const touch = e.touches[0];
-                translateX = touch.clientX - startX;
-                translateY = touch.clientY - startY;
-                updateTransform();
-
-                } else if (e.touches.length === 2 && isPinching) {
-                // 双指缩放
-                const touch1 = e.touches[0];
-                const touch2 = e.touches[1];
-                const currentDistance = getTouchDistance(touch1, touch2);
-
-                if (initialDistance > 0) {
-                    const newScale = Math.min(Math.max(
-                    initialScale * (currentDistance / initialDistance),
-                    0.3
-                    ), 4);
-                    scale = newScale;
-                    updateTransform();
-                }
-                }
-
-                e.preventDefault();
-            }, { passive: false });
-
-            mermaidElement.addEventListener('touchend', (e) => {
-                // 重置状态
-                if (e.touches.length === 0) {
-                isDragging = false;
-                isPinching = false;
-                initialDistance = 0;
-
-                // 延迟重置isTouch，避免鼠标事件立即触发
-                setTimeout(() => {
-                    isTouch = false;
-                }, 100);
-                } else if (e.touches.length === 1 && isPinching) {
-                // 从双指变为单指，切换为拖动模式
-                isPinching = false;
-                isDragging = true;
-
-                const touch = e.touches[0];
-                startX = touch.clientX - translateX;
-                startY = touch.clientY - translateY;
-                }
-
-                updateTransform();
-            });
-
-            mermaidElement.addEventListener('touchcancel', (e) => {
-                isDragging = false;
-                isPinching = false;
-                initialDistance = 0;
-
-                setTimeout(() => {
-                isTouch = false;
-                }, 100);
-
-                updateTransform();
-            });
-
-            // Enhanced wheel zoom with better center point handling
-            container.addEventListener('wheel', (e) => {
-                e.preventDefault();
-                const rect = container.getBoundingClientRect();
-                const centerX = rect.width / 2;
-                const centerY = rect.height / 2;
-
-                const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                const newScale = Math.min(Math.max(scale * delta, 0.3), 4);
-
-                // Adjust translation to zoom towards center
-                if (newScale !== scale) {
-                const scaleDiff = newScale / scale;
-                translateX = translateX * scaleDiff;
-                translateY = translateY * scaleDiff;
-                scale = newScale;
-
-                if (scale <= 1) {
-                    translateX = 0;
-                    translateY = 0;
-                }
-
-                updateTransform();
-                }
-            });
-
-            // Initialize display
-            updateTransform();
-            });
-        }
-
-        // Smooth scrolling for TOC links
-        document.querySelectorAll('.toc-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
+    // 代码复制
+    function initCopyButtons() {
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const code = btn.closest('.code-wrapper').querySelector('code');
+          const text = code.innerText;
+          try {
+            await navigator.clipboard.writeText(text);
+          } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+          }
+          btn.classList.add('copied');
+          btn.innerHTML = '<i class="fas fa-check"></i>已复制';
+          if (navigator.vibrate) navigator.vibrate(20);
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = '<i class="far fa-copy"></i>复制';
+          }, 2000);
         });
+      });
+    }
 
-        // Active TOC link highlighting
-        window.addEventListener('scroll', function() {
-            const sections = document.querySelectorAll('section[id], div[id]');
-            const scrollPos = window.scrollY + 100;
-            
-            sections.forEach(section => {
-                const sectionTop = section.offsetTop;
-                const sectionHeight = section.offsetHeight;
-                const sectionId = section.getAttribute('id');
-                
-                if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                    document.querySelectorAll('.toc-link').forEach(link => {
-                        link.classList.remove('active');
-                    });
-                    const activeLink = document.querySelector(`a[href="#${sectionId}"]`);
-                    if (activeLink) {
-                        activeLink.classList.add('active');
-                    }
-                }
-            });
+    // 滚动效果（进度条/导航高亮/回到顶部）
+    function initScrollEffects() {
+      const progressBar = document.getElementById('progressBar');
+      const backTop = document.getElementById('backTop');
+      const desktopLinks = document.querySelectorAll('.top-nav .nav-links a');
+      const mobileLinks = document.querySelectorAll('.mobile-tab a');
+      const sections = ['introduction','packet-capture','parameter-analysis','security-bypass'].map(id=>document.getElementById(id)).filter(Boolean);
+
+      window.addEventListener('scroll', () => {
+        const h = document.documentElement;
+        const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+        progressBar.style.width = pct + '%';
+
+        backTop.classList.toggle('show', window.scrollY > 500);
+
+        let current = sections[0]?.id;
+        sections.forEach(sec => {
+          if (window.scrollY + 120 >= sec.offsetTop) current = sec.id;
         });
+        desktopLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+        mobileLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + current));
+      });
 
-        // Add hover effects to tech cards
-        document.querySelectorAll('.tech-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-                this.style.boxShadow = '0 15px 30px rgba(0,0,0,0.1)';
-            });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
+      backTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        if (navigator.vibrate) navigator.vibrate(20);
+      });
+
+      // 锚点平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', e => {
+          const target = document.querySelector(link.getAttribute('href'));
+          if (target) {
+            e.preventDefault();
+            const top = target.getBoundingClientRect().top + window.scrollY - 72;
+            window.scrollTo({ top, behavior: 'smooth' });
+          }
         });
-    </script>
-  </body>
+      });
+    }
 
+    // Mermaid 控件（缩放/拖拽/全屏）
+    function initMermaidControls() {
+      document.querySelectorAll('.mermaid-container').forEach(container => {
+        const el = container.querySelector('.mermaid');
+        let scale = 1, isDrag = false, sx = 0, sy = 0, tx = 0, ty = 0;
+        let isTouch = false, isPinch = false, initDist = 0, initScale = 1;
+
+        const update = () => {
+          el.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`;
+          el.style.cursor = isDrag ? 'grabbing' : 'grab';
+          container.classList.toggle('zoomed', scale > 1);
+        };
+
+        const btnIn = container.querySelector('.zoom-in');
+        const btnOut = container.querySelector('.zoom-out');
+        const btnReset = container.querySelector('.reset-zoom');
+        const btnFs = container.querySelector('.fullscreen');
+
+        if (btnIn) btnIn.onclick = () => { scale = Math.min(scale*1.25, 4); update(); };
+        if (btnOut) btnOut.onclick = () => { scale = Math.max(scale/1.25, 0.3); if(scale<=1){tx=0;ty=0;} update(); };
+        if (btnReset) btnReset.onclick = () => { scale=1; tx=0; ty=0; update(); };
+        if (btnFs) btnFs.onclick = () => {
+          if (container.requestFullscreen) container.requestFullscreen();
+          else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+        };
+
+        // 滚轮缩放
+        container.addEventListener('wheel', e => {
+          e.preventDefault();
+          const delta = e.deltaY > 0 ? 0.9 : 1.1;
+          const ns = Math.min(Math.max(scale*delta, 0.3), 4);
+          if (ns !== scale) {
+            const d = ns/scale; tx *= d; ty *= d; scale = ns;
+            if (scale<=1) { tx=0; ty=0; }
+            update();
+          }
+        }, { passive: false });
+
+        // 鼠标拖拽
+        el.addEventListener('mousedown', e => {
+          if (isTouch) return;
+          isDrag = true; sx = e.clientX - tx; sy = e.clientY - ty; e.preventDefault();
+        });
+        document.addEventListener('mousemove', e => {
+          if (isDrag && !isTouch) { tx = e.clientX - sx; ty = e.clientY - sy; update(); }
+        });
+        document.addEventListener('mouseup', () => { isDrag = false; update(); });
+
+        // 触摸
+        const dist = (t1, t2) => Math.hypot(t2.clientX-t1.clientX, t2.clientY-t1.clientY);
+        el.addEventListener('touchstart', e => {
+          isTouch = true;
+          if (e.touches.length === 1) {
+            isPinch = false; isDrag = true;
+            sx = e.touches[0].clientX - tx; sy = e.touches[0].clientY - ty;
+          } else if (e.touches.length === 2) {
+            isPinch = true; isDrag = false;
+            initDist = dist(e.touches[0], e.touches[1]); initScale = scale;
+          }
+          e.preventDefault();
+        }, { passive: false });
+        el.addEventListener('touchmove', e => {
+          if (e.touches.length===1 && isDrag && !isPinch) {
+            tx = e.touches[0].clientX - sx; ty = e.touches[0].clientY - sy; update();
+          } else if (e.touches.length===2 && isPinch) {
+            const d = dist(e.touches[0], e.touches[1]);
+            if (initDist>0) { scale = Math.min(Math.max(initScale*(d/initDist),0.3),4); update(); }
+          }
+          e.preventDefault();
+        }, { passive: false });
+        el.addEventListener('touchend', e => {
+          if (e.touches.length === 0) {
+            isDrag = false; isPinch = false; initDist = 0;
+            setTimeout(()=>isTouch=false, 100);
+          }
+          update();
+        });
+        update();
+      });
+    }
+  </script>
+</body>
 </html>
+<!--25932124892395614730092019--><!--28131595382573747210092019--><!--28322357422573747210092019--><!--28500633942573747210092019--><!--28629723172395614730092019--><!--28890472362573747210092019--><!--28958103232573747210092019--><!--29101010242573747210092019-->
