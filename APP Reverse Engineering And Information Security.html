@@ -134,10 +134,15 @@
       z-index: 2;
       max-width: 1200px;
       margin: 0 auto;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     .hero-badges {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 0.5rem;
       margin-bottom: 1.25rem;
     }
@@ -173,11 +178,14 @@
       font-size: clamp(1rem, 1.6vw, 1.25rem);
       color: var(--text-secondary);
       max-width: 720px;
+      margin-left: auto;
+      margin-right: auto;
       margin-bottom: 1.75rem;
     }
     .hero-meta {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 1rem;
       color: var(--text-muted);
       font-size: 0.875rem;
@@ -276,9 +284,11 @@
     /* KPI 卡 */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(4, minmax(160px, 200px));
+      justify-content: center;
       gap: 1rem;
       margin-top: 2.5rem;
+      width: 100%;
     }
     .kpi-card {
       background: rgba(255,255,255,0.7);
@@ -286,6 +296,7 @@
       border: 1px solid rgba(226,232,240,0.8);
       border-radius: 16px;
       padding: 1.25rem 1.5rem;
+      text-align: center;
       transition: transform 0.3s, box-shadow 0.3s;
     }
     .kpi-card:hover {
@@ -314,7 +325,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 0.75rem;
+      margin: 0 auto 0.75rem;
       font-size: 1rem;
     }
 
@@ -754,6 +765,14 @@
     @media (max-width: 640px) {
       .mermaid-container { padding: 1rem; }
       .mermaid-control-btn:not(.reset-zoom) { display: none; }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(120px, 1fr));
+        gap: 0.75rem;
+      }
+      .kpi-card { padding: 1rem; }
+    }
+    @media (max-width: 420px) {
+      .kpi-grid { grid-template-columns: 1fr; max-width: 260px; margin-left: auto; margin-right: auto; }
     }
 
     /* 段落文本 */
@@ -867,6 +886,9 @@
     @media (max-width: 900px) {
       .mobile-tab { display: flex; }
       body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(160px, 220px));
+      }
     }
 
     /* 滚动条美化 */
@@ -1801,4 +1823,4 @@ if (strstr(path, "su") || strstr(path, "magisk")) {
   </script>
 </body>
 </html>
-<!--25932124892395614730092019--><!--28131595382573747210092019--><!--28322357422573747210092019--><!--28500633942573747210092019--><!--28629723172395614730092019--><!--28890472362573747210092019--><!--28958103232573747210092019--><!--29101010242573747210092019-->
+<!--25932124892395614730092019--><!--28131595382573747210092019--><!--28322357422573747210092019--><!--28500633942573747210092019--><!--28629723172395614730092019--><!--28890472362573747210092019--><!--28958103232573747210092019--><!--35748323802395614730092110--><!--35852373382395614730092110--><!--00165357022395614730092111--><!--00257757642395614730092111--><!--00572817122573747210092111--><!--00751312952573747210092111--><!--00816258482573747210092111--><!--01066662882573747210092111-->
